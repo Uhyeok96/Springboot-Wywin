@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<!-- 사용자 스크립트 추가 -->
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    // 추가적인 스크립트가 필요할 경우 여기에 작성
+  </script>
+</th:block>
+
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+  <!-- 필요시 CSS 추가 -->
+</th:block>
+
+<div layout:fragment="content">
+
+  <h1>경매 물품 등록</h1>
+
+  <form action="#" th:action="@{/auction/item/save}" th:object="${auctionItem}" method="post">
+    <label>상품명:</label><input type="text" th:field="*{itemName}" required/>
+    <label>상품설명:</label><textarea th:field="*{itemDetail}" required></textarea>
+    <label>경매 시작금액:</label><input type="number" th:field="*{bidPrice}" required/>
+    <button type="submit">등록</button>
+  </form>
+
+  <a href="/auction/items">리스트로 돌아가기</a> <!-- 경매 아이템 리스트 링크 -->
+
+</div>
+
+</html>
