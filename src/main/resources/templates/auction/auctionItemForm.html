@@ -3,30 +3,81 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
 
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
 <!-- 사용자 스크립트 추가 -->
 <th:block layout:fragment="script">
   <script th:inline="javascript">
-    // 추가적인 스크립트가 필요할 경우 여기에 작성
+    const maxFiles = 10; // 최대 파일 개수
+    let fileCount = 1; // 현재 추가된 파일 입력 필드 개수
+
+    function validateFileInput() {
+      const fileInput = document.querySelectorAll('input[type="file"]');
+
+      if (fileInput.length > maxFiles) {
+        alert('최대 10개의 이미지만 업로드할 수 있습니다.');
+        fileInput[fileInput.length - 1].value = ''; // 마지막 파일 입력 초기화
+        return;
+      }
+    }
+
+    function addFileInput() {
+      if (fileCount < maxFiles) {
+        const newInput = document.createElement('input');
+        newInput.type = 'file';
+        newInput.name = 'imageFiles';
+        newInput.accept = 'image/*';
+        newInput.classList.add('form-control-file', 'mt-2');
+        newInput.onchange = validateFileInput;
+        document.getElementById('fileInputs').appendChild(newInput);
+        fileCount++;
+      } else {
+        alert('최대 10개의 이미지를 추가할 수 있습니다.');
+      }
+    }
   </script>
 </th:block>
 
-<!-- 사용자 CSS 추가 -->
-<th:block layout:fragment="css">
-  <!-- 필요시 CSS 추가 -->
-</th:block>
+<div layout:fragment="content" class="container mt-5">
 
-<div layout:fragment="content">
+  <h1 class="mb-4">경매 물품 등록</h1>
 
-  <h1>경매 물품 등록</h1>
+  <form action="#" th:action="@{/auction/item/save}" th:object="${auctionItem}" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>상품명:</label>
+      <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명을 입력해주세요(최대 20자)" maxlength="20" required/>
+    </div>
 
-  <form action="#" th:action="@{/auction/item/save}" th:object="${auctionItem}" method="post">
-    <label>상품명:</label><input type="text" th:field="*{itemName}" required/>
-    <label>상품설명:</label><textarea th:field="*{itemDetail}" required></textarea>
-    <label>경매 시작금액:</label><input type="number" th:field="*{bidPrice}" required/>
-    <button type="submit">등록</button>
+    <div class="form-group">
+      <label>간단한 상품 설명:</label>
+      <textarea th:field="*{itemShortDetail}" class="form-control" placeholder="짧은 소개글을 입력해주세요(최대 20자)" maxlength="20" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>자세한 상품 설명:</label>
+      <textarea th:field="*{itemLongDetail}" class="form-control" placeholder="자세한 상품 설명을 입력해주세요(최대 2000자)" maxlength="2000" style="height: 200px; resize: vertical;" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="d-inline">경매 시작금액:</label>
+      <input type="number" th:field="*{bidPrice}" class="form-control d-inline" style="width: 100px;" required/>
+      <span class="ml-2">원</span>
+    </div>
+
+    <div class="form-group">
+      <label>이미지 업로드 (최대 10개):</label>
+      <div id="fileInputs">
+        <input type="file" name="imageFiles" accept="image/*" class="form-control-file" onchange="validateFileInput()" required/>
+      </div>
+      <button type="button" class="btn btn-secondary mt-2" onclick="addFileInput()">추가 이미지</button>
+    </div>
+
+    <button type="submit" class="btn btn-primary">등록</button>
   </form>
 
-  <a href="/auction/items">리스트로 돌아가기</a> <!-- 경매 아이템 리스트 링크 -->
+  <a href="/auction/items" class="btn btn-link mt-3">리스트로 돌아가기</a> <!-- 경매 아이템 리스트 링크 -->
 
 </div>
 

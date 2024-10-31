@@ -7,16 +7,17 @@ body {
     min-height: 100%;
 }
 .footer {
-    position: absolute;
+    position: relative;
     left: 0;
     right: 0;
     bottom: 0;
     width: 100%;
-    padding: 15px 0;
+    padding: 20px 0;
     text-align: center;
+    background-color: #f8f9fa; /* 푸터 배경색 추가 */
 }
 .content{
-    margin-bottom:100px;
+    margin-bottom:150px;
     margin-top: 50px;
     margin-left: 200px;
     margin-right: 200px;

@@ -64,10 +64,10 @@ dependencies {
             "jakarta.annotation:jakarta.annotation-api",
             "com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
 
-    /*// 스프링 시큐리티 시작용
+    // 스프링 시큐리티 시작용
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // 부트 3이상 부터는 6 사용 함 https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-springsecurity6
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.1.RELEASE'*/
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.1.RELEASE'
 
 
     // 폼으로 입력된 값이 유효한 값인지 검증하는 코드 https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation

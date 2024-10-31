@@ -12,35 +12,69 @@
 
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
-  <!-- 필요시 CSS 추가 -->
+  <style>
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 10px;
+      display: inline-block;
+      width: calc(20% - 20px); /* 한 줄에 5개 카드 */
+      vertical-align: top;
+    }
+    .card img {
+      width: 100%; /* 이미지 너비 조정 */
+      height: auto;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap; /* 카드들을 여러 줄로 배치 */
+      justify-content: space-between; /* 카드 간격 조정 */
+    }
+    .card-title {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+    .card-short-detail {
+      font-size: 0.9em;
+      color: #666;
+    }
+    .card-bid-price {
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
 </th:block>
 
 <div layout:fragment="content">
 
   <h1>경매 리스트</h1>
 
-  <table>
-    <thead>
-    <tr>
-      <th>상품명</th>
-      <th>보증금</th>
-      <th>수수료</th>
-      <th>벌금</th>
-      <th>최종 낙찰가</th>
-      <th>경매 시작금액</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${auctionItems}">
-      <td th:text="${item.itemName}"></td>
-      <td th:text="${item.deposit}"></td>
-      <td th:text="${item.commission}"></td>
-      <td th:text="${item.penalty}"></td>
-      <td th:text="${item.finalPrice}"></td>
-      <td th:text="${item.bidPrice}"></td>
-    </tr>
-    </tbody>
-  </table>
+  <div class="card-container">
+    <div class="card" th:each="item : ${auctionItems.content}">
+      <div>
+        <img th:if="${item.auctionImgs.size() > 0}"
+             th:src="${item.auctionImgs[0].imgUrl}"
+             alt="상품 이미지" />
+        <div th:if="${item.auctionImgs.size() == 0}">
+          <span>이미지가 없습니다.</span>
+        </div>
+      </div>
+      <div class="card-title" th:text="${item.itemName}"></div>
+      <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
+      <div class="card-bid-price">시작 금액: <span th:text="${item.bidPrice}"></span>원</div>
+    </div>
+  </div>
+
+  <!-- 페이징 처리 -->
+  <div>
+      <span th:if="${auctionItems.hasPrevious()}">
+          <a th:href="@{/auction/items(page=${auctionItems.number - 1}, size=${auctionItems.size})}">이전</a>
+      </span>
+    <span th:if="${auctionItems.hasNext()}">
+          <a th:href="@{/auction/items(page=${auctionItems.number + 1}, size=${auctionItems.size})}">다음</a>
+      </span>
+  </div>
 
   <a href="/auction/item/new">새 경매 물품 등록하기</a> <!-- 경매 물품 등록 링크 -->
 
