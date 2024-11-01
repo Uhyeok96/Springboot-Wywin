@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,27 +59,31 @@ public class AuctionService {
         auctionItemRepository.save(auctionItem); // 리포지토리를 통해 저장
     }
 
-    // 페이징 처리 메서드
+    // 상품 리스트 처리 메서드
     public Page<AuctionItemDTO> getAuctionItems(Pageable pageable) {
-        return auctionItemRepository.findAll(pageable)
-                .map(item -> {
-                    // AuctionItem을 AuctionItemDTO로 변환
-                    AuctionItemDTO dto = modelMapper.map(item, AuctionItemDTO.class);
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("regTime").descending()); // regTime 기준으로 내림차순 정렬
 
-                    // 해당 경매 아이템의 이미지 중 대표 이미지 설정
-                    AuctionImg repImg = item.getAuctionImgs().stream() // 이미지 리스트에서
-                            .filter(img -> "Y".equals(img.getRepimgYn())) // 대표 이미지 필터링
-                            .findFirst() // 첫 번째 결과만 가져오기
-                            .orElse(null); // 없으면 null
+        Page<AuctionItem> auctionItems = auctionItemRepository.findAll(pageable); // 페이징된 경매 아이템 리스트 가져오기
+        return auctionItems.map(item -> {
+            // AuctionItem을 AuctionItemDTO로 변환
+            AuctionItemDTO dto = modelMapper.map(item, AuctionItemDTO.class);
 
-                    if (repImg != null) {
-                        // 대표 이미지를 포함하는 리스트로 설정
-                        dto.setAuctionImgs(Collections.singletonList(AuctionImgDTO.of(repImg))); // 대표 이미지만 리스트에 추가
-                    }
+            // 해당 경매 아이템의 이미지 중 대표 이미지 설정
+            AuctionImg repImg = item.getAuctionImgs().stream() // 이미지 리스트에서
+                    .filter(img -> "Y".equals(img.getRepimgYn())) // 대표 이미지 필터링
+                    .findFirst() // 첫 번째 결과만 가져오기
+                    .orElse(null); // 없으면 null
 
-                    return dto; // 변환된 DTO 반환
-                });
+            if (repImg != null) {
+                // 대표 이미지를 포함하는 리스트로 설정
+                dto.setAuctionImgs(Collections.singletonList(AuctionImgDTO.of(repImg))); // 대표 이미지만 리스트에 추가
+            }
+
+            return dto; // 변환된 DTO 반환
+        });
     }
+
+
 
     // 상품 ID로 경매 아이템 조회
     public AuctionItemDTO getAuctionItemById(Long id) {

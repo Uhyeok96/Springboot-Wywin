@@ -59,13 +59,19 @@ public class AuctionController {
     }
 
     // 경매 물품 리스트를 보여주는 메서드 (페이징 추가)
-    @GetMapping("/items") // http://localhost:80/auction/items
+    @GetMapping("/items")
     public String listAuctionItems(Model model,
-                                   @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<AuctionItemDTO> auctionItems = auctionService.getAuctionItems(pageable); // 서비스 호출하여 페이징된 리스트 가져오기
-        model.addAttribute("auctionItems", auctionItems); // 모델에 추가
+                                   @RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   @RequestParam(defaultValue = "gallery") String view) {
+        // 페이지 번호가 1보다 작으면 1로 설정
+        if (page < 1) {
+            page = 1;
+        }
+        Pageable pageable = PageRequest.of(page - 1, size); // 0 기반 인덱스를 위해 1을 뺍니다.
+        Page<AuctionItemDTO> auctionItems = auctionService.getAuctionItems(pageable);
+        model.addAttribute("auctionItems", auctionItems);
+        model.addAttribute("view", view);
         return "auction/auctionItemList";
     }
 

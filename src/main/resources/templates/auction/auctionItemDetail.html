@@ -23,71 +23,16 @@
 </th:block>
 
 <th:block layout:fragment="css">
-    <style>
-        .item-detail-container {
-            display: flex;
-            margin: 20px;
-        }
-        .item-image {
-            width: 50%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* 중앙 정렬 */
-        }
-        .item-image .main-image {
-            width: 100%;
-            height: 300px; /* 고정된 높이 */
-            display: flex;
-            justify-content: center; /* 중앙 정렬 */
-            align-items: center; /* 중앙 정렬 */
-            overflow: hidden; /* 넘치는 부분 숨김 */
-            background-color: #f8f8f8; /* 배경색 */
-        }
-        .item-image .main-image img {
-            max-width: 100%; /* 최대 너비 100% */
-            max-height: 100%; /* 최대 높이 100% */
-            object-fit: cover; /* 비율 유지하면서 채움 */
-            object-position: center; /* 중앙 정렬 */
-        }
-        .thumbnail-container {
-            display: flex;
-            flex-wrap: wrap; /* 여러 줄로 나눠서 표시 */
-            margin-top: 10px;
-            gap: 10px; /* 썸네일 간격 조정 */
-        }
-        .thumbnail {
-            width: 70px; /* 고정된 너비 */
-            height: 70px; /* 고정된 높이 */
-            display: flex; /* 플렉스 박스 사용 */
-            justify-content: center; /* 중앙 정렬 */
-            align-items: center; /* 중앙 정렬 */
-            border: 1px solid #ddd; /* 테두리 */
-            border-radius: 5px; /* 모서리 둥글게 */
-            padding: 5px; /* 여백 추가 */
-            box-sizing: border-box; /* 패딩과 테두리를 포함한 크기 조정 */
-            cursor: pointer; /* 마우스 커서 변경 */
-        }
-        .thumbnail img {
-            max-width: 90%; /* 최대 너비 90% */
-            max-height: 90%; /* 최대 높이 90% */
-            object-fit: contain; /* 비율 유지하면서 포함 */
-            object-position: center; /* 중앙 정렬 */
-        }
-        .item-info {
-            width: 50%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/auctionItemDetail.css}" />
 </th:block>
 
-<div layout:fragment="content">
-    <h1>상품 상세 정보</h1>
+<div layout:fragment="content" class="content-wrapper">
 
+    <!-- 상품 이름 -->
+    <h2 class="item-title" th:text="${auctionItem.itemName}"></h2>
+    <div class="underline"></div> <!-- 밑줄 추가 -->
+
+    <!-- 상품 이미지 및 정보 -->
     <div class="item-detail-container">
         <div class="item-image">
             <div class="main-image">
@@ -101,17 +46,26 @@
                 </div>
             </div>
         </div>
-
+        <!-- 상품 정보 및 가격 -->
         <div class="item-info">
-            <h2 th:text="${auctionItem.itemName}"></h2>
             <div>시작 금액: <span th:text="${auctionItem.bidPrice}"></span>원</div>
             <div th:text="${auctionItem.itemLongDetail}"></div>
         </div>
     </div>
 
+    <div class="underline"></div> <!-- 등록된 사진들 섹션 위쪽 밑줄 추가 -->
+
+    <!-- 등록된 사진들을 보여주는 섹션 -->
+    <div class="item-images">
+        <div class="itemDetail-container">
+            <div class="itemDetail" th:each="img : ${auctionItem.auctionImgs}">
+                <img th:src="${img.imgUrl}" alt="등록 사진" />
+            </div>
+        </div>
+    </div>
+
     <!-- 상품 설명 -->
     <div class="item-description">
-        <h3 style="font-weight: bold;">상품 설명</h3>
         <p th:text="${auctionItem.itemLongDetail}"></p>
     </div>
 

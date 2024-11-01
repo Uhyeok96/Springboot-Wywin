@@ -25,11 +25,11 @@ body {
     text-align: center;
     background-color: black;
     color: aqua;
-    clear: both; /* 다른 요소들과의 겹침 방지 */
 }
 .content{
-    margin-bottom: 120px; /* 푸터 높이 + 여유 공간 */
+    margin-bottom:100px;
     margin-top: 50px;
     margin-left: 200px;
     margin-right: 200px;
+    background-color: lightgray;
 }
