@@ -3,21 +3,32 @@ html {
     min-height: 100%;
     margin: 0;
 }
+
+.header {
+    position: sticky;
+    top:0;
+    z-index: 9999;
+}
+
 body {
     min-height: 100%;
 }
 .footer {
-    position: relative;
+    position: absolute;
+    top: 92%;
     left: 0;
     right: 0;
     bottom: 0;
     width: 100%;
-    padding: 20px 0;
+    height: 100px;
+    padding: 5px 0 0 0;
     text-align: center;
-    background-color: #f8f9fa; /* 푸터 배경색 추가 */
+    background-color: black;
+    color: aqua;
+    clear: both; /* 다른 요소들과의 겹침 방지 */
 }
 .content{
-    margin-bottom:150px;
+    margin-bottom: 120px; /* 푸터 높이 + 여유 공간 */
     margin-top: 50px;
     margin-left: 200px;
     margin-right: 200px;

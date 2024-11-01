@@ -81,8 +81,6 @@
     <a class="sort-button" th:classappend="${param.sort == 'new'} ? 'selected' : ''" th:href="@{/auction/items(sort='new')}">신상품순</a>
     <a class="sort-button" th:classappend="${param.sort == 'price_desc'} ? 'selected' : ''" th:href="@{/auction/items(sort='price_desc')}">가격높은순</a>
     <a class="sort-button" th:classappend="${param.sort == 'price_asc'} ? 'selected' : ''" th:href="@{/auction/items(sort='price_asc')}">가격낮은순</a>
-    <a class="sort-button" th:classappend="${param.sort == 'quick_price_desc'} ? 'selected' : ''" th:href="@{/auction/items(sort='quick_price_desc')}">즉결높은순</a>
-    <a class="sort-button" th:classappend="${param.sort == 'quick_price_asc'} ? 'selected' : ''" th:href="@{/auction/items(sort='quick_price_asc')}">즉결낮은순</a>
     <a class="sort-button" th:classappend="${param.sort == 'bids_desc'} ? 'selected' : ''" th:href="@{/auction/items(sort='bids_desc')}">입찰많은순</a>
     <a class="sort-button" th:classappend="${param.sort == 'bids_asc'} ? 'selected' : ''" th:href="@{/auction/items(sort='bids_asc')}">입찰적은순</a>
     <a class="sort-button" th:classappend="${param.sort == 'end_soon'} ? 'selected' : ''" th:href="@{/auction/items(sort='end_soon')}">종료빠른순</a>
@@ -98,14 +96,16 @@
   <!-- 리스트 출력 -->
   <div class="card-container">
     <div class="card" th:each="item : ${auctionItems.content}">
-      <div>
-        <img th:if="${item.auctionImgs.size() > 0}"
-             th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
-             alt="대표 이미지" />
-      </div>
-      <div class="card-title" th:text="${item.itemName}"></div>
-      <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
-      <div class="card-bid-price">시작 금액: <span th:text="${item.bidPrice}"></span>원</div>
+      <a th:href="@{/auction/item/{id}(id=${item.id})}"> <!-- 상세 페이지 링크 -->
+        <div>
+          <img th:if="${item.auctionImgs.size() > 0}"
+               th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
+               alt="대표 이미지" />
+        </div>
+        <div class="card-title" th:text="${item.itemName}"></div>
+        <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
+        <div class="card-bid-price">시작 금액: <span th:text="${item.bidPrice}"></span>원</div>
+      </a>
     </div>
   </div>
 

@@ -69,4 +69,12 @@ public class AuctionController {
         return "auction/auctionItemList";
     }
 
+    // 경매 물품 상세 조회 메서드
+    @GetMapping("/item/{id}") // http://localhost:80/auction/item/{id}
+    public String getAuctionItemDetail(@PathVariable Long id, Model model) {
+        AuctionItemDTO auctionItem = auctionService.getAuctionItemById(id); // 서비스 호출
+        model.addAttribute("auctionItem", auctionItem); // 모델에 추가
+        return "auction/auctionItemDetail"; // 상세 페이지 템플릿 이름 변경
+    }
+
 }

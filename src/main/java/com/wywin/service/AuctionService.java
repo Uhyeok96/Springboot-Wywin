@@ -78,4 +78,11 @@ public class AuctionService {
                     return dto; // 변환된 DTO 반환
                 });
     }
+
+    // 상품 ID로 경매 아이템 조회
+    public AuctionItemDTO getAuctionItemById(Long id) {
+        AuctionItem auctionItem = auctionItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다.")); // 예외 처리
+        return modelMapper.map(auctionItem, AuctionItemDTO.class); // DTO로 변환
+    }
 }
