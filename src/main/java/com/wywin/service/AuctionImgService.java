@@ -41,6 +41,7 @@ public class AuctionImgService {
             return null; // 실패 시 null 반환
         }
 
-        return filePath.toString(); // 저장된 파일의 경로 반환
+        // URL 경로 반환 (예: /images/auction/UUID.확장자)
+        return "/images/auction/" + imgName;
     }
 }

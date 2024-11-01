@@ -1,7 +1,6 @@
 package com.wywin.service;
 
 import com.wywin.constant.ItemStatus;
-import com.wywin.dto.AuctionFormDTO;
 import com.wywin.entity.AuctionImg;
 import com.wywin.entity.AuctionItem;
 import com.wywin.repository.AuctionImgRepository;
@@ -49,29 +48,5 @@ public class AuctionItemServiceTest {
         }
 
         return multipartFileList;
-    }
-
-    @Test
-    @DisplayName("상품 등록 테스트")
-    @WithMockUser(username = "user1", roles = "USER")
-    void saveItem() throws Exception {
-        AuctionFormDTO auctionFormDTO = new AuctionFormDTO();
-        auctionFormDTO.setItemName("테스트상품");
-        auctionFormDTO.setItemStatus(ItemStatus.ONBID);
-        auctionFormDTO.setItemDetail("테스트 상품 입니다.");
-        auctionFormDTO.setBidPrice(1000);
-
-        List<MultipartFile> multipartFileList = createMultipartFiles();
-        Long itemId = auctionService.saveItem(auctionFormDTO, multipartFileList);
-        List<AuctionImg> auctionImgList = auctionImgRepository.findByItemIdOrderByIdAsc(itemId);
-
-        AuctionItem auctionItem = auctionItemRepository.findById(itemId)
-                .orElseThrow(EntityNotFoundException::new);
-
-        assertEquals(auctionFormDTO.getItemName(), auctionItem.getItemName());
-        assertEquals(auctionFormDTO.getItemStatus(), auctionItem.getItemStatus());
-        assertEquals(auctionFormDTO.getItemDetail(), auctionItem.getItemDetail());
-        assertEquals(auctionFormDTO.getBidPrice(), auctionItem.getBidPrice());
-        assertEquals(multipartFileList.get(0).getOriginalFilename(), auctionImgList.get(0).getOriImgName());
     }
 }

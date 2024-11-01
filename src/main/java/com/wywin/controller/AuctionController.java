@@ -34,7 +34,7 @@ public class AuctionController {
     }
 
     // 경매 물품 등록을 처리하는 메서드
-    @PostMapping("/item/save") // http://localhost:80/auction/item/save
+    @PostMapping("/item/save")
     public String saveAuctionItem(@ModelAttribute AuctionItemDTO auctionItemDTO,
                                   @RequestParam("imageFiles") MultipartFile[] imageFiles) {
         List<AuctionImgDTO> imageDtos = new ArrayList<>();
@@ -43,12 +43,11 @@ public class AuctionController {
                 String imgUrl = auctionImgService.saveImageFile(imageFile); // 이미지 저장 서비스 호출
                 if (imgUrl != null) {
                     String imgName = imageFile.getOriginalFilename(); // 원래 파일 이름
-                    String newImgName = imgUrl.substring(imgUrl.lastIndexOf("\\") + 1); // 저장된 파일명
 
                     AuctionImgDTO imageDto = new AuctionImgDTO();
-                    imageDto.setImgName(newImgName); // UUID로 저장된 파일명
+                    imageDto.setImgName(imgName); // 실제 파일 이름 (UUID로 저장된 파일명은 필요 없을 경우 생략 가능)
                     imageDto.setOriImgName(imgName); // 원래 파일 이름
-                    imageDto.setImgUrl(imgUrl); // 저장된 이미지 경로
+                    imageDto.setImgUrl(imgUrl); // 저장된 이미지 URL 경로
                     imageDtos.add(imageDto);
                 }
             }

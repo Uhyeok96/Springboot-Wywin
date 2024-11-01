@@ -8,7 +8,7 @@ import org.modelmapper.ModelMapper;
 @Getter @Setter
 public class AuctionImgDTO {
 
-    private Long id;
+    private Long id;    // 이미지 ID
 
     private String imgName; // 이미지 파일명
 
