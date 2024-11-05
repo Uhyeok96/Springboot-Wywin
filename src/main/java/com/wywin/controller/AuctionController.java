@@ -4,12 +4,14 @@ import com.wywin.dto.AuctionImgDTO;
 import com.wywin.dto.AuctionItemDTO;
 import com.wywin.service.AuctionImgService;
 import com.wywin.service.AuctionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,26 +37,34 @@ public class AuctionController {
 
     // 경매 물품 등록을 처리하는 메서드
     @PostMapping("/item/save")
-    public String saveAuctionItem(@ModelAttribute AuctionItemDTO auctionItemDTO,
+    public String saveAuctionItem(@Valid @ModelAttribute AuctionItemDTO auctionItemDTO,
+                                  BindingResult bindingResult,
                                   @RequestParam("imageFiles") MultipartFile[] imageFiles) {
+
+        // 유효성 검사 오류가 있으면 폼으로 다시 돌아갑니다.
+        if (bindingResult.hasErrors()) {
+            return "auction/auctionItemForm";
+        }
+
+        // 이미지 처리
         List<AuctionImgDTO> imageDtos = new ArrayList<>();
         for (MultipartFile imageFile : imageFiles) {
             if (!imageFile.isEmpty()) {
-                String imgUrl = auctionImgService.saveImageFile(imageFile); // 이미지 저장 서비스 호출
+                String imgUrl = auctionImgService.saveImageFile(imageFile);
                 if (imgUrl != null) {
-                    String imgName = imageFile.getOriginalFilename(); // 원래 파일 이름
-
                     AuctionImgDTO imageDto = new AuctionImgDTO();
-                    imageDto.setImgName(imgName); // 실제 파일 이름 (UUID로 저장된 파일명은 필요 없을 경우 생략 가능)
-                    imageDto.setOriImgName(imgName); // 원래 파일 이름
-                    imageDto.setImgUrl(imgUrl); // 저장된 이미지 URL 경로
+                    imageDto.setImgName(imageFile.getOriginalFilename());
+                    imageDto.setOriImgName(imageFile.getOriginalFilename());
+                    imageDto.setImgUrl(imgUrl);
                     imageDtos.add(imageDto);
                 }
             }
         }
-        auctionItemDTO.setAuctionImgs(imageDtos); // 이미지 리스트 설정
+        auctionItemDTO.setAuctionImgs(imageDtos);
 
-        auctionService.saveAuctionItem(auctionItemDTO); // 서비스 호출하여 저장
+        // 경매 아이템 저장
+        auctionService.saveAuctionItem(auctionItemDTO);
+
         return "redirect:/auction/items"; // 경매 아이템 리스트로 리다이렉트
     }
 

@@ -47,33 +47,50 @@
   </style>
 </th:block>
 
-
 <div layout:fragment="content" class="container mt-5">
 
   <h1 class="mb-4">경매 물품 등록</h1>
 
   <form action="#" th:action="@{/auction/item/save}" th:object="${auctionItem}" method="post" enctype="multipart/form-data">
+
+    <!-- 상품명 -->
     <div class="form-group">
       <label>상품명:</label>
       <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명을 입력해주세요(최대 20자)" maxlength="20" required/>
     </div>
 
+    <!-- 간단한 상품 설명 -->
     <div class="form-group">
       <label>간단한 상품 설명:</label>
       <textarea th:field="*{itemShortDetail}" class="form-control" placeholder="짧은 소개글을 입력해주세요(최대 20자)" maxlength="20" required></textarea>
     </div>
 
+    <!-- 자세한 상품 설명 -->
     <div class="form-group">
       <label>자세한 상품 설명:</label>
       <textarea th:field="*{itemLongDetail}" class="form-control" placeholder="자세한 상품 설명을 입력해주세요(최대 2000자)" maxlength="2000" style="height: 200px; resize: vertical;" required></textarea>
     </div>
 
+    <!-- 경매 시작금액 -->
     <div class="form-group">
       <label class="d-inline">경매 시작금액:</label>
       <input type="number" th:field="*{bidPrice}" class="form-control d-inline" style="width: 100px;" required/>
       <span class="ml-2">원</span>
     </div>
 
+    <!-- 경매 기간 선택 -->
+    <div class="form-group">
+      <label for="auctionPeriod">경매 기간:</label>
+      <select th:field="*{auctionPeriod}" id="auctionPeriod" class="form-control" required>
+        <option value="" th:text="'선택하세요'" disabled selected></option> <!-- 기본적으로 선택되지 않도록 -->
+        <option value="1">1일</option>
+        <option value="3">3일</option>
+        <option value="5">5일</option>
+        <option value="7">7일</option>
+      </select>
+    </div>
+
+    <!-- 이미지 업로드 -->
     <div class="form-group">
       <label>이미지 업로드 (최대 10개):</label>
       <div id="fileInputs">

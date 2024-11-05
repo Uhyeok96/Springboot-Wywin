@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,14 +34,19 @@ public class AuctionService {
     private final ModelMapper modelMapper = new ModelMapper(); // DTO와 엔티티 간 변환을 위한 ModelMapper
 
     // 경매 아이템 등록
+    // 경매 아이템 등록
     public void saveAuctionItem(AuctionItemDTO auctionItemDTO) {
-        AuctionItem auctionItem = modelMapper.map(auctionItemDTO, AuctionItem.class); // DTO를 엔티티로 변환
+        // 1. AuctionItemDTO를 AuctionItem 엔티티로 변환
+        AuctionItem auctionItem = modelMapper.map(auctionItemDTO, AuctionItem.class);
 
-        // 이미지를 저장할 리스트 초기화
+        // 2. 경매 종료 일시 설정 (현재 시간 + auctionPeriod일)
+        LocalDateTime auctionEndDate = LocalDateTime.now().plusDays(auctionItem.getAuctionPeriod());
+        auctionItem.setAuctionEndDate(auctionEndDate);
+
+        // 3. 이미지 처리
         List<AuctionImg> images = new ArrayList<>();
-
-        // 이미지를 엔티티에 추가
         List<AuctionImgDTO> auctionImgs = auctionItemDTO.getAuctionImgs();
+
         for (int i = 0; i < auctionImgs.size(); i++) {
             AuctionImgDTO imgDto = auctionImgs.get(i);
             AuctionImg image = new AuctionImg();
@@ -55,8 +61,10 @@ public class AuctionService {
             images.add(image);
         }
 
-        auctionItem.setAuctionImgs(images); // AuctionItem에 이미지 리스트 추가
-        auctionItemRepository.save(auctionItem); // 리포지토리를 통해 저장
+        auctionItem.setAuctionImgs(images); // 이미지 리스트 설정
+
+        // 4. 경매 아이템 저장
+        auctionItemRepository.save(auctionItem);
     }
 
     // 상품 리스트 처리 메서드
