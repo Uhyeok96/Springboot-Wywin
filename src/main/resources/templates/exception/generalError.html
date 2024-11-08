@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="script">
+  <script>
+    // 서버 오류 관련 스크립트 추가 시 이곳에 작성
+  </script>
+</th:block>
+
+<th:block layout:fragment="css">
+  <link rel="stylesheet" th:href="@{/css/error.css}" />
+</th:block>
+
+<div layout:fragment="content" class="content-wrapper">
+  <h2>서버 오류가 발생했습니다.</h2>
+  <p>잠시 후 다시 시도해주세요.</p>
+
+  <!-- 메인 화면으로 돌아가기 -->
+  <a href="/" class="btn btn-primary">메인 화면으로 돌아가기</a>
+</div>
+
+</html>

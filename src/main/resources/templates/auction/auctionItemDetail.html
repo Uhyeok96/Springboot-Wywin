@@ -3,6 +3,12 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
 
+<head>
+    <!-- CSRF 토큰 메타 태그 -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+</head>
+
 <th:block layout:fragment="script">
     <script>
         /* 썸네일 클릭 시 메인이미지 변경 */
@@ -19,6 +25,42 @@
                 });
             });
         });
+
+        /* 삭제 확인 */
+        function confirmDelete(event, deleteUrl) {
+            event.preventDefault();  // 기본 링크 동작 방지
+
+            // 확인창 띄우기
+            const confirmation = window.confirm("정말 삭제하시겠습니까?");
+
+            if (confirmation) {
+                // CSRF 토큰을 헤더에 추가
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                // 실제 삭제 요청을 POST 방식으로 보내기
+                fetch(deleteUrl, {
+                    method: 'POST',  // HTTP 메서드를 POST로 변경
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded', // form-urlencoded로 전송
+                        [csrfHeader]: csrfToken  // CSRF 토큰을 헤더에 추가
+                    },
+                    body: `_method=DELETE`  // 실제로 DELETE처럼 처리되도록 _method 파라미터 추가
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.href = '/auction/items';  // 삭제 후 목록 페이지로 리디렉션
+                        } else {
+                            alert("삭제 실패했습니다. 다시 시도해 주세요.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("삭제 중 오류가 발생했습니다.");
+                    });
+            } else {
+                console.log("삭제 취소");
+            }
+        }
     </script>
 </th:block>
 
@@ -29,7 +71,18 @@
 <div layout:fragment="content" class="content-wrapper">
 
     <!-- 상품 이름 -->
-    <h2 class="item-title" th:text="${auctionItem.itemName}"></h2>
+    <div class="item-title-wrapper">
+        <h2 class="item-title" th:text="${auctionItem.itemName}"></h2>
+        <!-- 수정, 삭제 버튼 추가 -->
+        <div th:if="${canEdit}" class="item-buttons">
+            <!-- 수정 링크 -->
+            <a th:href="@{/auction/item/{id}/update(id=${auctionItem.id})}" class="action-link">수정</a>
+            <!-- 삭제 링크 -->
+            <a href="#" class="action-link" th:href="@{'/auction/item/' + ${auctionItem.id} + '/delete'}"
+               th:attr="onclick='confirmDelete(event, this.href)'">삭제</a>
+        </div>
+    </div>
+
     <div class="underline"></div> <!-- 밑줄 추가 -->
 
     <!-- 상품 이미지 및 정보 -->

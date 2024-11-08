@@ -10,7 +10,7 @@ public class AuctionImgDTO {
 
     private Long id;    // 이미지 ID
 
-    private String imgName; // 이미지 파일명
+    private String imgName; // 이미지 파일명 (uuid로 저장)
 
     private String oriImgName; // 원본 이미지 파일명
 

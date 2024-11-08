@@ -12,24 +12,30 @@ html {
 
 body {
     min-height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
+.content {
+    flex: 1; /* 페이지 내용이 길어지면 푸터와 겹치지 않도록 합니다 */
+    margin-top: 50px;
+    margin-left: 200px;
+    margin-right: 200px;
+    background-color: lightgray;
+    padding-bottom: 120px; /* 푸터와 겹치지 않도록 충분한 여백을 추가 */
+}
+
 .footer {
-    position: absolute;
-    top: 92%;
+    position: relative; /* 푸터를 고정하지 않고 페이지 끝으로 내려가도록 변경 */
+    bottom: 0;
     left: 0;
     right: 0;
-    bottom: 0;
     width: 100%;
     height: 100px;
     padding: 5px 0 0 0;
     text-align: center;
     background-color: black;
     color: aqua;
-}
-.content{
-    margin-bottom:100px;
-    margin-top: 50px;
-    margin-left: 200px;
-    margin-right: 200px;
-    background-color: lightgray;
+    margin-top: auto; /* 푸터가 항상 아래로 가도록 설정 */
 }

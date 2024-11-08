@@ -189,3 +189,14 @@
 .new-item-button:hover {
     text-decoration: underline; /* 호버 시 밑줄 추가 */
 }
+
+.no-items-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px; /* 화면 중간에 위치하도록 충분한 높이 설정 */
+    font-size: 24px;
+    font-weight: bold;
+    color: #777; /* 텍스트 색상 */
+    text-align: center;
+}

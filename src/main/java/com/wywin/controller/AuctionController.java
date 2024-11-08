@@ -2,6 +2,8 @@ package com.wywin.controller;
 
 import com.wywin.dto.AuctionImgDTO;
 import com.wywin.dto.AuctionItemDTO;
+import com.wywin.entity.AuctionImg;
+import com.wywin.exception.UnauthorizedAccessException;
 import com.wywin.service.AuctionImgService;
 import com.wywin.service.AuctionService;
 import jakarta.validation.Valid;
@@ -9,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,16 +22,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping(value = "/auction") // http://localhost:80/auction
 public class AuctionController {
 
     @Autowired
-    private AuctionService auctionService; // 서비스 의존성 주입
+    private AuctionService auctionService; // 경매 서비스 의존성 주입
 
     @Autowired
-    private AuctionImgService auctionImgService;
+    private AuctionImgService auctionImgService;    // 이미지 서비스 의존성 주입
 
     // 경매 물품 등록 폼을 보여주는 메서드
     @GetMapping("/item/new") // http://localhost:80/auction/item/new
@@ -53,8 +59,11 @@ public class AuctionController {
                 String imgUrl = auctionImgService.saveImageFile(imageFile);
                 if (imgUrl != null) {
                     AuctionImgDTO imageDto = new AuctionImgDTO();
-                    imageDto.setImgName(imageFile.getOriginalFilename());
-                    imageDto.setOriImgName(imageFile.getOriginalFilename());
+
+                    // UUID가 적용된 이미지 이름을 저장
+                    String uuidImgName = imgUrl.substring(imgUrl.lastIndexOf('/') + 1); // /images/auction/uuid.jpg 에서 uuid.jpg 추출
+                    imageDto.setImgName(uuidImgName);  // UUID 적용된 이미지 파일명
+                    imageDto.setOriImgName(imageFile.getOriginalFilename());  // 원본 파일명 저장
                     imageDto.setImgUrl(imgUrl);
                     imageDtos.add(imageDto);
                 }
@@ -88,9 +97,81 @@ public class AuctionController {
     // 경매 물품 상세 조회 메서드
     @GetMapping("/item/{id}") // http://localhost:80/auction/item/{id}
     public String getAuctionItemDetail(@PathVariable Long id, Model model) {
-        AuctionItemDTO auctionItem = auctionService.getAuctionItemById(id); // 서비스 호출
-        model.addAttribute("auctionItem", auctionItem); // 모델에 추가
-        return "auction/auctionItemDetail"; // 상세 페이지 템플릿 이름 변경
+        // 로그인한 사용자의 이메일을 SecurityContextHolder에서 가져오기
+        String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 경매 아이템 조회
+        AuctionItemDTO auctionItem = auctionService.getAuctionItemById(id);
+        model.addAttribute("auctionItem", auctionItem);
+
+        // 권한 확인: 등록자와 로그인 사용자가 동일한지 확인
+        try {
+            auctionService.validateOwner(id, loggedInUser); // 권한 확인 (수정/삭제 권한이 있을 경우)
+            model.addAttribute("canEdit", true); // 수정 권한 있음
+            model.addAttribute("canDelete", true); // 삭제 권한 있음
+        } catch (UnauthorizedAccessException e) {
+            model.addAttribute("canEdit", false); // 수정 권한 없음
+            model.addAttribute("canDelete", false); // 삭제 권한 없음
+        }
+
+        return "auction/auctionItemDetail"; // 상세 페이지 템플릿 이름
+    }
+
+    // 경매 아이템 수정 페이지
+    @GetMapping("/item/{id}/update")
+    public String updateAuctionItemForm(@PathVariable("id") Long id, Model model) {
+        AuctionItemDTO auctionItemDTO = auctionService.getAuctionItemById(id); // 아이템 정보 가져오기
+        model.addAttribute("auctionItem", auctionItemDTO); // 수정 폼에 아이템 정보 설정
+        return "auction/auctionItemEdit"; // 수정 폼 페이지 리턴
+    }
+
+    // 상품 수정 처리 메서드
+    @PostMapping("/item/{id}/update")
+    public String updateAuctionItem(@PathVariable("id") Long id,
+                                    @Valid @ModelAttribute AuctionItemDTO auctionItemDTO,
+                                    BindingResult bindingResult,
+                                    @RequestParam(value = "imageFiles", required = false) MultipartFile[] imageFiles) {
+
+        // 유효성 검사 오류가 있으면 폼으로 다시 돌아갑니다.
+        if (bindingResult.hasErrors()) {
+            return "auction/auctionEdit"; // 수정 폼으로 다시 이동
+        }
+
+        // 이미지 처리
+        List<AuctionImgDTO> imageDtos = new ArrayList<>();
+        for (MultipartFile imageFile : imageFiles) {
+            if (!imageFile.isEmpty()) {
+                String imgUrl = auctionImgService.saveImageFile(imageFile);  // 이미지를 저장하고 URL을 얻음
+                if (imgUrl != null) {
+                    AuctionImgDTO imageDto = new AuctionImgDTO();
+                    String uuidImgName = imgUrl.substring(imgUrl.lastIndexOf('/') + 1); // /images/auction/uuid.jpg 에서 uuid.jpg 추출
+                    imageDto.setImgName(uuidImgName);  // UUID로 된 파일명
+                    imageDto.setOriImgName(imageFile.getOriginalFilename()); // 원본 파일명 저장
+                    imageDto.setImgUrl(imgUrl);  // URL 경로 저장
+                    imageDtos.add(imageDto);
+                }
+            }
+        }
+        auctionItemDTO.setAuctionImgs(imageDtos);
+
+        // 경매 아이템 업데이트
+        auctionService.updateAuctionItem(id, auctionItemDTO);
+
+        return "redirect:/auction/items"; // 경매 아이템 리스트로 리다이렉트
+    }
+
+    // 경매 아이템 삭제 처리 (수정이랑 별개)
+    @PostMapping("/item/{id}/delete")
+    public String deleteAuctionItem(@PathVariable Long id, Authentication authentication) {
+        // 현재 로그인한 사용자 정보 가져오기
+        String loggedInUser = authentication.getName(); // 현재 로그인한 사용자 정보
+
+        // 권한 확인 (등록자와 로그인 사용자가 동일한지 확인)
+        auctionService.validateOwner(id, loggedInUser); // 권한 체크
+
+        // 삭제 처리
+        auctionService.deleteAuctionItem(id);
+        return "redirect:/auction/items"; // 삭제 후 리스트 페이지로 리디렉트
     }
 
 }

@@ -52,4 +52,8 @@ public class AuctionItemDTO {
 
     private List<AuctionImgDTO> auctionImgs; // 이미지 리스트
 
+    private String createdBy; // 등록자
+
+    private String modifiedBy; // 수정자
+
 }

@@ -37,18 +37,22 @@
         alert('최대 10개의 이미지를 추가할 수 있습니다.');
       }
     }
+
+    // 뒤로가기 함수
+    function goBack() {
+      window.history.back(); // 이전 페이지로 이동
+    }
   </script>
 </th:block>
 
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
   <style>
-    /* 별도 css 추가 */
     .form-inline-custom {
       display: flex;
       align-items: center;
-      justify-content: flex-start; /* 좌측 정렬 */
-      gap: 20px; /* 항목 간 간격 */
+      justify-content: flex-start;
+      gap: 20px;
     }
 
     .form-inline-custom label {
@@ -57,21 +61,29 @@
 
     .form-inline-custom .form-control {
       width: auto;
-      max-width: 120px; /* 넓이를 적당하게 제한 */
+      max-width: 120px;
+    }
+
+    /* 대표이미지 문구가 첫 번째 이미지 입력 필드 위에 고정되도록 수정 */
+    .image-info {
+      display: block;
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 8px; /* 파일 선택 버튼 위에 간격을 추가 */
     }
   </style>
 </th:block>
 
 <div layout:fragment="content" class="container mt-5">
 
-  <h1 class="mb-4">경매 물품 등록</h1>
+  <h1 class="mb-4">경매 물품 수정</h1>
 
-  <form action="#" th:action="@{/auction/item/save}" th:object="${auctionItem}" method="post" enctype="multipart/form-data">
+  <form th:action="@{/auction/item/{id}/update(id=${auctionItem.id})}" th:object="${auctionItem}" method="post" enctype="multipart/form-data">
 
     <!-- 상품명 -->
     <div class="form-group">
       <label>상품명:</label>
-      <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명을 입력해주세요(최대 20자)" maxlength="20" required/>
+      <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명을 입력해주세요(최대 20자)" maxlength="20" required />
     </div>
 
     <!-- 간단한 상품 설명 -->
@@ -86,40 +98,51 @@
       <textarea th:field="*{itemLongDetail}" class="form-control" placeholder="자세한 상품 설명을 입력해주세요(최대 2000자)" maxlength="2000" style="height: 200px; resize: vertical;" required></textarea>
     </div>
 
-    <!-- 경매 시작금액 & 경매 기간 -->
+    <!-- 경매 시작금액 & 경매 기간 (수정 불가능) -->
     <div class="form-group form-inline-custom">
       <div class="d-flex align-items-center">
         <label class="d-inline">경매 시작금액:</label>
-        <input type="number" th:field="*{bidPrice}" class="form-control d-inline" style="width: 120px;" required/>
+        <!-- 경매 시작금액은 읽기 전용으로 설정 -->
+        <input type="text" th:value="${auctionItem.bidPrice}" class="form-control d-inline" style="width: 120px;" disabled />
         <span class="ml-2">원</span>
+        <!-- 기존 금액을 숨겨서 폼 전송 -->
+        <input type="hidden" th:field="*{bidPrice}" th:value="${auctionItem.bidPrice}" />
       </div>
 
       <div class="d-flex align-items-center ml-4">
         <label for="auctionPeriod" class="d-inline">경매 기간:</label>
-        <select th:field="*{auctionPeriod}" id="auctionPeriod" class="form-control ml-2" required>
-          <option value="" th:text="'선택하세요'" disabled selected></option> <!-- 기본적으로 선택되지 않도록 -->
-          <option value="1">1일</option>
-          <option value="3">3일</option>
-          <option value="5">5일</option>
-          <option value="7">7일</option>
+        <!-- 경매 기간도 수정 불가능하나 값은 숨겨서 서버로 전달 -->
+        <select id="auctionPeriod" th:value="${auctionItem.auctionPeriod}" class="form-control ml-2" disabled>
+          <option value="1" th:selected="*{auctionPeriod == 1}">1일</option>
+          <option value="3" th:selected="*{auctionPeriod == 3}">3일</option>
+          <option value="5" th:selected="*{auctionPeriod == 5}">5일</option>
+          <option value="7" th:selected="*{auctionPeriod == 7}">7일</option>
         </select>
+        <!-- 기존 기간을 숨겨서 폼 전송 -->
+        <input type="hidden" th:field="*{auctionPeriod}" th:value="${auctionItem.auctionPeriod}" />
       </div>
     </div>
 
-    <!-- 이미지 업로드 -->
+    <!-- 이미지 추가 -->
     <div class="form-group">
-      <label>이미지 업로드 (최대 10개):</label>
+      <label>이미지 추가:</label>
+
+      <!-- 대표이미지 안내 문구가 파일 선택 버튼 위에 고정 -->
+      <span class="image-info">대표이미지로 설정됩니다</span>
+
       <div id="fileInputs">
-        <input type="file" name="imageFiles" accept="image/*" class="form-control-file" onchange="validateFileInput()" required/>
+        <input type="file" name="imageFiles" accept="image/*" class="form-control-file" onchange="validateFileInput()" />
       </div>
-      <button type="button" class="btn btn-secondary mt-2" onclick="addFileInput()">추가 이미지</button>
+
+      <button type="button" class="btn btn-link mt-2" onclick="addFileInput()">이미지 추가</button>
     </div>
 
-    <button type="submit" class="btn btn-primary">등록</button>
+    <div class="form-group d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary">수정 완료</button>
+      <button type="button" class="btn btn-secondary" onclick="goBack()">취소</button> <!-- 취소 버튼 -->
+    </div>
+
   </form>
-
-  <a href="/auction/items" class="btn btn-link mt-3">리스트로 돌아가기</a> <!-- 경매 아이템 리스트 링크 -->
-
 </div>
 
 </html>

@@ -46,6 +46,11 @@
     </div>
   </div>
 
+  <!-- 게시물이 없을 때 표시할 메시지 -->
+  <div th:if="${auctionItems.content.isEmpty()}" class="no-items-message">
+    <p>아직 등록된 게시물이 없습니다.</p>
+  </div>
+
   <!-- 갤러리 형식 출력 -->
   <div th:if="${view == 'gallery'}" class="card-container">
     <div class="card" th:each="item : ${auctionItems.content}">
@@ -81,20 +86,20 @@
   </div>
 
   <!-- 페이징 처리 -->
-  <div class="pagination-container">
+  <div class="pagination-container" th:if="${auctionItems.totalPages > 1}">
     <ul class="pagination">
-      <li class="page-item" th:classappend="${auctionItems.hasPrevious()}?'':'disabled'">
-        <a th:href="@{/auction/items(page=${auctionItems.number}, size=${auctionItems.size}, view=${view})}" class="page-link">이전</a>
+      <li class="page-item" th:classappend="${auctionItems.hasPrevious()} ? '' : 'disabled'">
+        <a th:href="@{/auction/items(page=${auctionItems.number - 1}, size=${auctionItems.size}, view=${view})}" class="page-link">이전</a>
       </li>
 
       <th:block th:each="page : ${#numbers.sequence(1, auctionItems.totalPages)}">
-        <li class="page-item" th:classappend="${auctionItems.number + 1 == page}?'active':''">
-          <a th:href="@{/auction/items(page=${page}, size=${auctionItems.size}, view=${view})}" class="page-link" th:text="${page}"></a>
+        <li class="page-item" th:classappend="${auctionItems.number + 1 == page} ? 'active' : ''">
+          <a th:href="@{/auction/items(page=${page - 1}, size=${auctionItems.size}, view=${view})}" class="page-link" th:text="${page}"></a>
         </li>
       </th:block>
 
-      <li class="page-item" th:classappend="${auctionItems.hasNext()}?'':'disabled'">
-        <a th:href="@{/auction/items(page=${auctionItems.number + 2}, size=${auctionItems.size}, view=${view})}" class="page-link">다음</a>
+      <li class="page-item" th:classappend="${auctionItems.hasNext()} ? '' : 'disabled'">
+        <a th:href="@{/auction/items(page=${auctionItems.number + 1}, size=${auctionItems.size}, view=${view})}" class="page-link">다음</a>
       </li>
     </ul>
   </div>
