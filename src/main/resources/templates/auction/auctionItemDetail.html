@@ -17,50 +17,133 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const thumbnails = document.querySelectorAll('.thumbnail img');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            const mainImage = document.querySelector('.main-image img');
+
+            // 썸네일 클릭 시 메인 이미지를 변경하고, 빨간 테두리를 추가
             thumbnails.forEach(thumbnail => {
                 thumbnail.addEventListener('click', function() {
-                    const imgUrl = this.getAttribute('data-img-url');
+                    const imgUrl = this.querySelector('img').getAttribute('data-img-url');
                     changeMainImage(imgUrl);
+
+                    // 모든 썸네일에서 'selected' 클래스 제거
+                    thumbnails.forEach(t => t.classList.remove('selected'));
+
+                    // 클릭된 썸네일에 'selected' 클래스 추가
+                    this.classList.add('selected');
                 });
             });
+
+            // 서버에서 전달받은 finalPrice 값 처리
+            let finalPrice = parseInt("[[${auctionItem.finalPrice}]]");
+            const bidPrice = parseInt("[[${auctionItem.bidPrice}]]");
+
+            // finalPrice가 null 또는 NaN이면 bidPrice로 초기화
+            if (isNaN(finalPrice)) {
+                finalPrice = bidPrice;
+            }
+
+            // 현재 가격 표시 업데이트
+            document.getElementById('currentPrice').textContent = finalPrice;
+
+            // 입찰 동의 체크박스 이벤트 처리
+            const agreementCheckbox = document.getElementById('agreement');
+            const bidButton = document.getElementById('bidBtn');
+            bidButton.disabled = !agreementCheckbox.checked; // 페이지 로드 시 초기화
+
+            // 입찰 동의 체크박스 상태에 따라 버튼 활성화/비활성화
+            agreementCheckbox.addEventListener('change', function() {
+                bidButton.disabled = !agreementCheckbox.checked;
+            });
+
+            // 입찰 처리 함수
+            function submitBid(event) {
+                const bidAmountInput = document.getElementById('bidAmount');
+                const bidAmount = parseInt(bidAmountInput.value);
+
+                // 입찰 금액이 비어있거나 현재 가격보다 적은 경우 경고창
+                if (!bidAmount || bidAmount <= finalPrice) {
+                    alert("입찰 금액은 현재 가격보다 커야 하며, 빈 값을 입력할 수 없습니다.");
+                    event.preventDefault(); // 폼 제출 방지
+                    return;
+                }
+
+                // 입찰 동의 체크박스 검사
+                if (!agreementCheckbox.checked) {
+                    alert("경매입찰에 관한 정책에 동의해주세요");
+                    event.preventDefault(); // 폼 제출 방지
+                    return;
+                }
+
+                // 숨겨진 입력 필드가 없으면 추가
+                let hiddenBidAmount = document.getElementById('hiddenBidAmount');
+                if (!hiddenBidAmount) {
+                    // hiddenBidAmount를 추가
+                    hiddenBidAmount = document.createElement('input');
+                    hiddenBidAmount.type = 'hidden';
+                    hiddenBidAmount.name = 'bidAmount'; // 서버로 전달할 name
+                    hiddenBidAmount.id = 'hiddenBidAmount';
+                    document.getElementById('bidForm').appendChild(hiddenBidAmount);
+                }
+
+                // 서버로 실제 입찰 요청을 전송하기 위해 숨겨진 입력 필드에 bidAmount를 설정
+                document.getElementById('hiddenBidAmount').value = bidAmount;
+
+                // 입찰 금액 업데이트 (finalPrice를 변경)
+                finalPrice = bidAmount;
+
+                // 현재 가격 표시 업데이트
+                document.getElementById('currentPrice').textContent = finalPrice + " 원";
+
+                // 실제 입찰 요청 폼 제출
+                document.getElementById('bidForm').submit();
+            }
+
+            // 입찰하기 버튼 클릭 시 submitBid 호출
+            bidButton.addEventListener('click', submitBid);
         });
 
-        /* 삭제 확인 */
-        function confirmDelete(event, deleteUrl) {
-            event.preventDefault();  // 기본 링크 동작 방지
+        // 경매 종료 시간 카운트다운 함수
+        function startCountdown() {
+            const auctionEndDate = new Date("[[${auctionItem.auctionEndDate}]]").getTime(); // 서버에서 전달한 경매 종료 시간
 
-            // 확인창 띄우기
-            const confirmation = window.confirm("정말 삭제하시겠습니까?");
+            // 남은 시간을 계산하는 함수
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = auctionEndDate - now;
 
-            if (confirmation) {
-                // CSRF 토큰을 헤더에 추가
-                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                if (distance <= 0) {
+                    document.getElementById("countdown").innerHTML = "경매 종료";
+                    clearInterval(countdownInterval);
+                } else {
+                    // 남은 시간을 계산 (일, 시간, 분, 초 단위)
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24)); // 일
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // 시간
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); // 분
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000); // 초
 
-                // 실제 삭제 요청을 POST 방식으로 보내기
-                fetch(deleteUrl, {
-                    method: 'POST',  // HTTP 메서드를 POST로 변경
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded', // form-urlencoded로 전송
-                        [csrfHeader]: csrfToken  // CSRF 토큰을 헤더에 추가
-                    },
-                    body: `_method=DELETE`  // 실제로 DELETE처럼 처리되도록 _method 파라미터 추가
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.href = '/auction/items';  // 삭제 후 목록 페이지로 리디렉션
-                        } else {
-                            alert("삭제 실패했습니다. 다시 시도해 주세요.");
-                        }
-                    })
-                    .catch(error => {
-                        alert("삭제 중 오류가 발생했습니다.");
-                    });
-            } else {
-                console.log("삭제 취소");
+                    // 출력 형식: 일, 시간, 분, 초
+                    let countdownText = "";
+                    if (days > 0) {
+                        countdownText += days + "일 ";
+                    }
+                    countdownText += hours + "시간 " + minutes + "분 " + seconds + "초";
+
+                    document.getElementById("countdown").innerHTML = countdownText;
+                }
             }
+
+            // 첫 번째로 카운트다운 값을 즉시 업데이트
+            updateCountdown();
+
+            // 카운트다운을 1초마다 업데이트
+            const countdownInterval = setInterval(updateCountdown, 1000);
         }
+
+        // 페이지 로드 후 바로 카운트다운 시작
+        document.addEventListener('DOMContentLoaded', function() {
+            startCountdown();
+        });
     </script>
 </th:block>
 
@@ -87,24 +170,96 @@
 
     <!-- 상품 이미지 및 정보 -->
     <div class="item-detail-container">
-        <div class="item-image">
-            <div class="main-image">
-                <img th:src="@{${auctionItem.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}" alt="대표 이미지" />
+        <!-- 상품 이미지 및 썸네일을 포함한 왼쪽 영역 -->
+        <div class="left-column">
+            <div class="item-image">
+                <div class="main-image">
+                    <img th:src="@{${auctionItem.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}" alt="대표 이미지" />
+                </div>
             </div>
+            <!-- 썸네일을 이미지 아래에 배치 -->
             <div class="thumbnail-container">
                 <div class="thumbnail" th:each="img : ${auctionItem.auctionImgs}">
-                    <img th:src="${img.imgUrl}"
-                         th:attr="data-img-url=${img.imgUrl}"
-                         alt="썸네일" />
+                    <img th:src="${img.imgUrl}" th:attr="data-img-url=${img.imgUrl}" alt="썸네일" />
                 </div>
             </div>
         </div>
-        <!-- 상품 정보 및 가격 -->
+
+        <!-- 상품 정보는 오른쪽 영역 -->
         <div class="item-info">
-            <div>시작 금액: <span th:text="${auctionItem.bidPrice}"></span>원</div>
-            <div th:text="${auctionItem.itemLongDetail}"></div>
+            <div class="info-box medium-box">
+                <div class="item-time">
+                    <span>남은 시간:</span>
+                    <span id="countdown"></span>
+                </div>
+                <div class="item-start-price">
+                    <span>개시 가격:</span>
+                    <span class="price" th:text="${auctionItem.bidPrice}"></span> 원
+                </div>
+                <div class="item-price">
+                    <span>현재 가격:</span>
+                    <span class="price" id="currentPrice"></span> 원
+                </div>
+                <div class="item-estimated">
+                    <span>예상 견적가:</span>
+                    <!--<span class="price" th:text="${auctionItem.estimatedPrice}"></span> 원-->
+                </div>
+            </div>
+
+            <form id="bidForm" th:action="@{/auction/item/{id}/bid(id=${auctionItem.id})}" method="POST">
+            <!-- CSRF 토큰 추가 -->
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+
+                <div class="info-box small-box">
+                    <div class="bid-amount">
+                        <label for="bidAmount">입찰 금액:</label>
+                        <input type="number" id="bidAmount" name="bidAmount" min="${auctionItem.bidPrice + 100}" />
+                    </div>
+                    <div class="seller-note">
+                        <label for="memo">전달 메모:</label>
+                        <textarea id="memo" name="memo" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- 큰 박스 (large-box) -->
+                <div class="info-box large-box">
+                    <!-- 첫 번째 구역: 제목 -->
+                    <div class="agreement-box agreement-header">
+                        <h3>wywin 경매 입찰 동의</h3>
+                    </div>
+
+                    <!-- 두 번째 구역: 내용 -->
+                    <div class="agreement-box agreement-content">
+                        <p>입찰전에 꼭! 확인 부탁 드립니다.</p>
+
+                        <p>1. 입찰하여 낙찰된 상품은 반드시 구매하는 것에 동의합니다.<br>
+                            (입찰후에는 취소가 안되는것을 이해했으며 동의합니다.)</p>
+
+                        <p>2. 낙찰 받은 후 자동 결제하는것에 동의 합니다.</p>
+
+                        <p>3. wywin의 경매관련 규정들을 숙지했으며 이에 동의합니다.<br>
+                            (wywin의 수수료 규정 포함 일체 책임을 묻지 않겠습니다.)</p>
+
+                        <p>4. wywin는 진가품 여부에 대해서는 책임을 지지 않습니다. 이에 동의합니다.<br>
+                            식물 등 검역 관련 상품에 대한 입찰은 금하고 있습니다. 이에 동의합니다.</p>
+                    </div>
+
+                    <!-- 세 번째 구역: 체크박스 -->
+                    <div class="agreement-box agreement-checkbox">
+                        <input type="checkbox" id="agreement" name="agreement" />
+                        <label for="agreement">입찰 관련 동의</label>
+                    </div>
+                </div>
+
+                <!-- 입찰하기 버튼은 info-box 바깥에 배치 -->
+                <div class="bid-button-wrapper">
+                    <div class="bid-button">
+                        <button id="bidBtn" onclick="submitBid()" disabled>입찰하기</button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </div>
+    </div> <!-- item-detail-container 끝 -->
 
     <div class="underline"></div> <!-- 등록된 사진들 섹션 위쪽 밑줄 추가 -->
 
@@ -119,10 +274,11 @@
 
     <!-- 상품 설명 -->
     <div class="item-description">
+        <h3>상품 설명</h3>
         <p th:text="${auctionItem.itemLongDetail}"></p>
     </div>
 
-    <a href="/auction/items">상품 목록으로 돌아가기</a>
+    <a href="/auction/items" class="back-to-list">상품 목록으로 돌아가기</a>
 </div>
 
 </html>

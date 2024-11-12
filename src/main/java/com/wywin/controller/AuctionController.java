@@ -160,7 +160,7 @@ public class AuctionController {
         return "redirect:/auction/items"; // 경매 아이템 리스트로 리다이렉트
     }
 
-    // 경매 아이템 삭제 처리 (수정이랑 별개)
+    // 경매 아이템 삭제 처리
     @PostMapping("/item/{id}/delete")
     public String deleteAuctionItem(@PathVariable Long id, Authentication authentication) {
         // 현재 로그인한 사용자 정보 가져오기
@@ -172,6 +172,36 @@ public class AuctionController {
         // 삭제 처리
         auctionService.deleteAuctionItem(id);
         return "redirect:/auction/items"; // 삭제 후 리스트 페이지로 리디렉트
+    }
+
+    // 입찰 처리 메서드
+    @PostMapping("/item/{id}/bid")
+    public String placeBid(@PathVariable Long id,
+                           @RequestParam Integer bidAmount,
+                           Authentication authentication,
+                           Model model) {
+        // 경매 아이템을 조회
+        AuctionItemDTO auctionItem = auctionService.getAuctionItemById(id);
+
+        // 현재 로그인한 사용자
+        String loggedInUser = authentication.getName();
+
+        // 입찰 금액 유효성 검사
+        if (bidAmount <= auctionItem.getFinalPrice()) {
+            model.addAttribute("error", "입찰 금액은 현재 가격보다 커야 합니다.");
+            model.addAttribute("auctionItem", auctionItem); // 상세 페이지에서 현재 경매 아이템 정보 추가
+            return "auction/auctionItemDetail";  // 오류 메시지와 함께 상세 페이지로 돌아갑니다.
+        }
+
+        // 입찰 처리
+        auctionService.placeBid(id, bidAmount);
+
+        // 입찰 후 최신 finalPrice 값을 다시 반환
+        auctionItem = auctionService.getAuctionItemById(id); // 최신 정보를 다시 가져옵니다.
+        model.addAttribute("auctionItem", auctionItem);
+
+        // 성공적으로 입찰한 후 경매 아이템 상세 페이지로 리디렉션
+        return "redirect:/auction/item/" + id;
     }
 
 }

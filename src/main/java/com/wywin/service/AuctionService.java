@@ -41,14 +41,14 @@ public class AuctionService {
 
     // 경매 아이템 등록
     public void saveAuctionItem(AuctionItemDTO auctionItemDTO) {
-        // 1. AuctionItemDTO를 AuctionItem 엔티티로 변환
+        // AuctionItemDTO를 AuctionItem 엔티티로 변환
         AuctionItem auctionItem = modelMapper.map(auctionItemDTO, AuctionItem.class);
 
-        // 2. 경매 종료 일시 설정 (현재 시간 + auctionPeriod일)
-        LocalDateTime auctionEndDate = LocalDateTime.now().plusDays(auctionItem.getAuctionPeriod());
-        auctionItem.setAuctionEndDate(auctionEndDate);
+        // 경매 종료일 계산
+        LocalDateTime auctionEndDate = LocalDateTime.now().plusDays(auctionItemDTO.getAuctionPeriod());
+        auctionItem.setAuctionEndDate(auctionEndDate);  // 경매 종료일 설정
 
-        // 3. 이미지 처리
+        // 이미지 처리
         List<AuctionImg> images = new ArrayList<>();
         List<AuctionImgDTO> auctionImgs = auctionItemDTO.getAuctionImgs();
 
@@ -68,7 +68,7 @@ public class AuctionService {
 
         auctionItem.setAuctionImgs(images); // 이미지 리스트 설정
 
-        // 4. 경매 아이템 저장
+        // 경매 아이템 저장
         auctionItemRepository.save(auctionItem);
     }
 
@@ -163,7 +163,7 @@ public class AuctionService {
         auctionItemRepository.save(auctionItem); // 경매 아이템 저장
     }
 
-    // 경매 아이템 삭제 (수정이랑 별개)
+    // 경매 아이템 삭제
     public void deleteAuctionItem(Long id) {
         AuctionItem auctionItem = auctionItemRepository.findById(id)
                 .orElseThrow(() -> new AuctionItemNotFoundException("아이템을 찾을 수 없습니다."));
@@ -183,6 +183,26 @@ public class AuctionService {
         // 등록자와 로그인 사용자가 동일한지 확인
         if (!auctionItem.getCreatedBy().equals(loggedInUser)) {
             throw new UnauthorizedAccessException("수정 또는 삭제할 권한이 없습니다.");
+        }
+    }
+
+    // 입찰 처리
+    public void placeBid(Long itemId, Integer bidAmount) {
+        // 경매 아이템 조회
+        AuctionItem auctionItem = auctionItemRepository.findById(itemId)
+                .orElseThrow(() -> new AuctionItemNotFoundException("경매 아이템을 찾을 수 없습니다."));
+
+        // 입찰 금액이 시작 가격보다 낮으면 예외 처리
+        if (bidAmount < auctionItem.getBidPrice()) {
+            throw new IllegalArgumentException("입찰 금액은 시작 가격보다 커야 합니다.");
+        }
+
+        // 입찰 금액이 최종 가격보다 높으면 finalPrice 갱신
+        if (auctionItem.getFinalPrice() == null || bidAmount > auctionItem.getFinalPrice()) {
+            auctionItem.setFinalPrice(bidAmount);  // 최종 낙찰가 갱신
+            auctionItemRepository.save(auctionItem);  // 변경 사항 저장
+        } else {
+            throw new IllegalArgumentException("입찰 금액은 현재 가격보다 커야 합니다.");
         }
     }
 }
