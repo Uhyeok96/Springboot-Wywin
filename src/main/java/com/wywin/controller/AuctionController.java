@@ -2,8 +2,7 @@ package com.wywin.controller;
 
 import com.wywin.dto.AuctionImgDTO;
 import com.wywin.dto.AuctionItemDTO;
-import com.wywin.entity.AuctionImg;
-import com.wywin.exception.UnauthorizedAccessException;
+import com.wywin.dto.MemberDTO;
 import com.wywin.service.AuctionImgService;
 import com.wywin.service.AuctionService;
 import jakarta.validation.Valid;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping(value = "/auction") // http://localhost:80/auction
@@ -41,14 +38,15 @@ public class AuctionController {
         return "auction/auctionItemForm"; // Thymeleaf 템플릿 이름
     }
 
-    // 경매 물품 등록을 처리하는 메서드
     @PostMapping("/item/save")
     public String saveAuctionItem(@Valid @ModelAttribute AuctionItemDTO auctionItemDTO,
                                   BindingResult bindingResult,
-                                  @RequestParam("imageFiles") MultipartFile[] imageFiles) {
+                                  @RequestParam("imageFiles") MultipartFile[] imageFiles,
+                                  Model model) {
 
         // 유효성 검사 오류가 있으면 폼으로 다시 돌아갑니다.
         if (bindingResult.hasErrors()) {
+            model.addAttribute("auctionItem", auctionItemDTO); // 오류 발생 시, 입력된 값들을 다시 폼으로 전달
             return "auction/auctionItemForm";
         }
 
@@ -71,11 +69,19 @@ public class AuctionController {
         }
         auctionItemDTO.setAuctionImgs(imageDtos);
 
-        // 경매 아이템 저장
-        auctionService.saveAuctionItem(auctionItemDTO);
+        try {
+            // 경매 아이템 저장
+            auctionService.saveAuctionItem(auctionItemDTO);
+        } catch (IllegalArgumentException e) {
+            // 오류 발생 시 에러 메시지를 모델에 추가
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("auctionItem", auctionItemDTO); // 오류 발생 시, 입력된 값들을 다시 폼으로 전달
+            return "auction/auctionItemForm";  // 오류가 있을 경우 폼으로 다시 돌아갑니다.
+        }
 
         return "redirect:/auction/items"; // 경매 아이템 리스트로 리다이렉트
     }
+
 
     // 경매 물품 리스트를 보여주는 메서드 (페이징 추가)
     @GetMapping("/items")
@@ -105,14 +111,9 @@ public class AuctionController {
         model.addAttribute("auctionItem", auctionItem);
 
         // 권한 확인: 등록자와 로그인 사용자가 동일한지 확인
-        try {
-            auctionService.validateOwner(id, loggedInUser); // 권한 확인 (수정/삭제 권한이 있을 경우)
-            model.addAttribute("canEdit", true); // 수정 권한 있음
-            model.addAttribute("canDelete", true); // 삭제 권한 있음
-        } catch (UnauthorizedAccessException e) {
-            model.addAttribute("canEdit", false); // 수정 권한 없음
-            model.addAttribute("canDelete", false); // 삭제 권한 없음
-        }
+        auctionService.validateOwner(id, loggedInUser); // 권한 확인 (수정/삭제 권한이 있을 경우)
+        model.addAttribute("canEdit", true); // 수정 권한 있음
+        model.addAttribute("canDelete", true); // 삭제 권한 있음
 
         return "auction/auctionItemDetail"; // 상세 페이지 템플릿 이름
     }
@@ -176,15 +177,22 @@ public class AuctionController {
 
     // 입찰 처리 메서드
     @PostMapping("/item/{id}/bid")
-    public String placeBid(@PathVariable Long id,
-                           @RequestParam Integer bidAmount,
-                           Authentication authentication,
+    public String placeBid(@PathVariable Long id, // 경매상품 id
+                           @RequestParam Integer bidAmount, // 입찰금액
+                           @RequestParam boolean agreement, // 입찰 동의를 받을 수 있도록 추가
+                           Authentication authentication, // 현재 로그인한 사용자 정보
                            Model model) {
         // 경매 아이템을 조회
         AuctionItemDTO auctionItem = auctionService.getAuctionItemById(id);
 
         // 현재 로그인한 사용자
-        String loggedInUser = authentication.getName();
+        String loggedInUser = authentication.getName(); // 이메일 (로그인된 사용자)
+
+        // 이메일을 이용해 회원 정보 조회
+        MemberDTO member = auctionService.getMemberByEmail(loggedInUser);  // AuctionService에서 이메일로 회원 조회
+
+        // 회원 정보에서 닉네임 가져오기
+        String nickname = member.getNickName(); // 최종 입찰자 닉네임
 
         // 입찰 금액 유효성 검사
         if (bidAmount <= auctionItem.getFinalPrice()) {
@@ -193,12 +201,22 @@ public class AuctionController {
             return "auction/auctionItemDetail";  // 오류 메시지와 함께 상세 페이지로 돌아갑니다.
         }
 
+        // 입찰 동의 여부 검사
+        if (!agreement) {
+            model.addAttribute("error", "입찰 동의가 필요합니다.");
+            model.addAttribute("auctionItem", auctionItem);
+            return "auction/auctionItemDetail";  // 동의하지 않으면 오류 메시지와 함께 상세 페이지로 돌아갑니다.
+        }
+
         // 입찰 처리
         auctionService.placeBid(id, bidAmount);
 
         // 입찰 후 최신 finalPrice 값을 다시 반환
         auctionItem = auctionService.getAuctionItemById(id); // 최신 정보를 다시 가져옵니다.
         model.addAttribute("auctionItem", auctionItem);
+
+        // 최종 입찰자 정보 추가
+        model.addAttribute("finalBidder", nickname);  // 닉네임을 모델에 추가
 
         // 성공적으로 입찰한 후 경매 아이템 상세 페이지로 리디렉션
         return "redirect:/auction/item/" + id;

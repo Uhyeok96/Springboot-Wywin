@@ -39,7 +39,7 @@
             const bidPrice = parseInt("[[${auctionItem.bidPrice}]]");
 
             // finalPrice가 null 또는 NaN이면 bidPrice로 초기화
-            if (isNaN(finalPrice)) {
+            if (isNaN(finalPrice) || finalPrice <= 0) {
                 finalPrice = bidPrice;
             }
 
@@ -114,6 +114,28 @@
 
                 if (distance <= 0) {
                     document.getElementById("countdown").innerHTML = "경매 종료";
+
+                    // 경매 종료 후 처리: 배경색 변경, 메시지 표시, 버튼 변경
+                    const smallBox = document.querySelector('.info-box.small-box');
+                    const largeBox = document.querySelector('.info-box.large-box');
+                    const bidButton = document.getElementById('bidBtn');
+                    const agreementCheckbox = document.getElementById('agreement');
+
+                    smallBox.style.backgroundColor = 'black';
+                    largeBox.style.backgroundColor = 'black';
+                    smallBox.style.color = 'white';
+                    largeBox.style.color = 'white';
+
+                    smallBox.innerHTML = '<p style="color:white;">경매 종료</p>';
+                    largeBox.innerHTML = '<p style="color:white;">경매 종료</p>';
+
+                    // 입찰하기 버튼 상태 변경
+                    bidButton.textContent = "경매 종료";
+                    bidButton.disabled = true;
+
+                    // 입찰 동의 체크박스 비활성화
+                    agreementCheckbox.disabled = true;
+
                     clearInterval(countdownInterval);
                 } else {
                     // 남은 시간을 계산 (일, 시간, 분, 초 단위)
@@ -213,11 +235,11 @@
                 <div class="info-box small-box">
                     <div class="bid-amount">
                         <label for="bidAmount">입찰 금액:</label>
-                        <input type="number" id="bidAmount" name="bidAmount" min="${auctionItem.bidPrice + 100}" />
+                        <input type="number" id="bidAmount" name="bidAmount" />
                     </div>
                     <div class="seller-note">
-                        <label for="memo">전달 메모:</label>
-                        <textarea id="memo" name="memo" rows="3"></textarea>
+                        <label for="memo">현재 최종입찰자:</label>
+                        <input type="text" id="memo" name="memo" value="${finalBidder}" readonly />
                     </div>
                 </div>
 

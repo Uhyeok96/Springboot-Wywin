@@ -1,5 +1,6 @@
 package com.wywin.entity;
 
+import com.wywin.constant.CurrencyType;
 import com.wywin.constant.ItemStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class AuctionItem extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;    // 상품 코드
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, unique = true)
     private String itemName;  // 상품명
 
     @Column(nullable = false, length = 20)
@@ -30,23 +31,27 @@ public class AuctionItem extends BaseEntity{
     @Column(nullable = false, length = 2000)
     private String itemLongDetail;  // 자세한 상품 설명
 
-    @Column(nullable = true) // 보증금은 null 가능
-    private Integer deposit;  // 보증금
+    @Column(nullable = false)
+    private Integer deposit = 0;  // 보증금
 
-    @Column(nullable = true) // 수수료는 null 가능
-    private Integer commission;  // 수수료
+    @Column(nullable = false)
+    private Integer commission = 0;  // 수수료
 
-    @Column(nullable = true) // 벌금은 null 가능
-    private Integer penalty;  // 벌금
+    @Column(nullable = false)
+    private Integer penalty = 0;  // 벌금
 
-    @Column(nullable = true) // 최종 낙찰가는 null 가능
-    private Integer finalPrice; // 최종 낙찰가
+    @Column(nullable = false)
+    private Integer finalPrice = 0; // 최종 낙찰가
 
     @Column(nullable = false)
     private Integer bidPrice;  // 경매 시작금액
 
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus = ItemStatus.ONBID; // 상품 판매 상태
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CurrencyType currencyType = CurrencyType.KRW; // 경매 상품 화폐 종류 (기본값: KRW)
 
     @OneToMany(mappedBy = "auctionItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AuctionImg> auctionImgs; // 연관된 이미지 리스트

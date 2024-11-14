@@ -207,19 +207,25 @@ button.action-link:hover {
     margin-right: 10px; /* label과 input 사이에 간격 추가 */
 }
 
-/* 메모 입력란 */
-.seller-note textarea {
+/* 현재 최종입찰자 입력란 */
+.seller-note input {
     width: 70%;  /* 가로 크기 약간 줄이기 */
-    height: 60px; /* 세로 높이 약간 늘리기 */
     padding: 8px;
     margin-top: 5px;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-sizing: border-box;
+    font-size: 14px;  /* 글자 크기 설정 (선택적) */
 }
 
+/* label과 input 사이에 간격 추가 */
 .seller-note label {
-    margin-right: 10px; /* label과 textarea 사이에 간격 추가 */
+    margin-right: 10px; /* label과 input 사이에 간격 추가 */
+}
+
+/* small-box 아래 여백 추가 */
+.info-box.small-box {
+    margin-bottom: 20px;  /* small-box 아래에 20px의 간격을 추가 */
 }
 
 /* large-box 스타일: 3등분 그리드 레이아웃 */

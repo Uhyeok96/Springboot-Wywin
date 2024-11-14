@@ -3,12 +3,12 @@ package com.wywin.service;
 
 import com.wywin.dto.AuctionImgDTO;
 import com.wywin.dto.AuctionItemDTO;
+import com.wywin.dto.MemberDTO;
 import com.wywin.entity.AuctionImg;
 import com.wywin.entity.AuctionItem;
-import com.wywin.exception.AuctionItemNotFoundException;
-import com.wywin.exception.UnauthorizedAccessException;
-import com.wywin.repository.AuctionImgRepository;
+import com.wywin.entity.Member;
 import com.wywin.repository.AuctionItemRepository;
+import com.wywin.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +34,9 @@ public class AuctionService {
     @Autowired
     private AuctionItemRepository auctionItemRepository; // 리포지토리 의존성 주입
 
+    @Autowired
+    private final MemberRepository memberRepository;  // MemberRepository 의존성 주입
+
     private final AuctionImgService auctionImgService; // 이미지 서비스 의존성 주입
 
     private final ModelMapper modelMapper = new ModelMapper(); // DTO와 엔티티 간 변환을 위한 ModelMapper
@@ -41,8 +44,28 @@ public class AuctionService {
 
     // 경매 아이템 등록
     public void saveAuctionItem(AuctionItemDTO auctionItemDTO) {
+        // 중복된 상품명 확인
+        boolean isDuplicate = auctionItemRepository.existsByItemName(auctionItemDTO.getItemName());
+        if (isDuplicate) {
+            throw new IllegalArgumentException("이미 등록된 상품명입니다.");
+        }
+
         // AuctionItemDTO를 AuctionItem 엔티티로 변환
         AuctionItem auctionItem = modelMapper.map(auctionItemDTO, AuctionItem.class);
+
+        // 각 필드에 기본값을 설정
+        if (auctionItem.getDeposit() == null) {
+            auctionItem.setDeposit(0); // 기본값 설정
+        }
+        if (auctionItem.getCommission() == null) {
+            auctionItem.setCommission(0); // 기본값 설정
+        }
+        if (auctionItem.getPenalty() == null) {
+            auctionItem.setPenalty(0); // 기본값 설정
+        }
+        if (auctionItem.getFinalPrice() == null) {
+            auctionItem.setFinalPrice(0); // 기본값 설정
+        }
 
         // 경매 종료일 계산
         LocalDateTime auctionEndDate = LocalDateTime.now().plusDays(auctionItemDTO.getAuctionPeriod());
@@ -99,7 +122,7 @@ public class AuctionService {
     // 상품 ID로 경매 아이템 조회
     public AuctionItemDTO getAuctionItemById(Long id) {
         AuctionItem auctionItem = auctionItemRepository.findById(id)
-                .orElseThrow(() -> new AuctionItemNotFoundException("상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
 
         // AuctionItem을 AuctionItemDTO로 변환
         AuctionItemDTO dto = modelMapper.map(auctionItem, AuctionItemDTO.class);
@@ -115,7 +138,7 @@ public class AuctionService {
     public void updateAuctionItem(Long id, AuctionItemDTO auctionItemDTO) {
         // 기존 경매 아이템 조회
         AuctionItem auctionItem = auctionItemRepository.findById(id)
-                .orElseThrow(() -> new AuctionItemNotFoundException("아이템을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("아이템을 찾을 수 없습니다."));
 
         // 기존 데이터 수정
         auctionItem.setItemName(auctionItemDTO.getItemName());
@@ -124,9 +147,10 @@ public class AuctionService {
         auctionItem.setBidPrice(auctionItemDTO.getBidPrice());
         auctionItem.setAuctionPeriod(auctionItemDTO.getAuctionPeriod());
 
-        // 경매 종료 일시 수정
-        LocalDateTime auctionEndDate = LocalDateTime.now().plusDays(auctionItem.getAuctionPeriod());
-        auctionItem.setAuctionEndDate(auctionEndDate);
+        // 경매 종료 일시 수정하지 않음
+        // 기존 종료일을 그대로 유지
+        LocalDateTime existingEndDate = auctionItem.getAuctionEndDate();
+        auctionItem.setAuctionEndDate(existingEndDate);
 
         // 기존 이미지를 삭제
         List<AuctionImg> existingImages = auctionItem.getAuctionImgs();
@@ -166,7 +190,7 @@ public class AuctionService {
     // 경매 아이템 삭제
     public void deleteAuctionItem(Long id) {
         AuctionItem auctionItem = auctionItemRepository.findById(id)
-                .orElseThrow(() -> new AuctionItemNotFoundException("아이템을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("아이템을 찾을 수 없습니다."));
 
         // 해당 아이템의 이미지를 삭제
         auctionImgService.deleteImages(auctionItem.getAuctionImgs());
@@ -178,11 +202,11 @@ public class AuctionService {
     public void validateOwner(Long auctionItemId, String loggedInUser) {
         // 아이템을 조회하고 예외 처리
         AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
-                .orElseThrow(() -> new AuctionItemNotFoundException("아이템을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("아이템을 찾을 수 없습니다."));
 
         // 등록자와 로그인 사용자가 동일한지 확인
         if (!auctionItem.getCreatedBy().equals(loggedInUser)) {
-            throw new UnauthorizedAccessException("수정 또는 삭제할 권한이 없습니다.");
+            throw new RuntimeException("수정 또는 삭제할 권한이 없습니다.");
         }
     }
 
@@ -190,7 +214,7 @@ public class AuctionService {
     public void placeBid(Long itemId, Integer bidAmount) {
         // 경매 아이템 조회
         AuctionItem auctionItem = auctionItemRepository.findById(itemId)
-                .orElseThrow(() -> new AuctionItemNotFoundException("경매 아이템을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("경매 아이템을 찾을 수 없습니다."));
 
         // 입찰 금액이 시작 가격보다 낮으면 예외 처리
         if (bidAmount < auctionItem.getBidPrice()) {
@@ -205,4 +229,17 @@ public class AuctionService {
             throw new IllegalArgumentException("입찰 금액은 현재 가격보다 커야 합니다.");
         }
     }
+
+    // 이메일을 이용해 회원 정보를 조회하는 메서드
+    public MemberDTO getMemberByEmail(String email) {
+        Member member = memberRepository.findByEmail(email);  // 이메일로 회원 정보 조회
+
+        if (member == null) {
+            throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
+        }
+
+        // Member 엔티티를 MemberDTO로 변환하여 반환
+        return modelMapper.map(member, MemberDTO.class);
+    }
+
 }

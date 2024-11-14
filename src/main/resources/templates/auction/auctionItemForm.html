@@ -10,9 +10,15 @@
 <!-- 사용자 스크립트 추가 -->
 <th:block layout:fragment="script">
   <script th:inline="javascript">
+    let errorMessage = [[${errorMessage}]];
+    if (errorMessage) {
+      alert(errorMessage); // 경고 메시지 띄우기
+    }
+
     const maxFiles = 10; // 최대 파일 개수
     let fileCount = 1; // 현재 추가된 파일 입력 필드 개수
 
+    // 파일 업로드 제한 체크
     function validateFileInput() {
       const fileInput = document.querySelectorAll('input[type="file"]');
 
@@ -23,6 +29,7 @@
       }
     }
 
+    // 파일 입력 필드 추가
     function addFileInput() {
       if (fileCount < maxFiles) {
         const newInput = document.createElement('input');
@@ -43,12 +50,11 @@
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
   <style>
-    /* 별도 css 추가 */
     .form-inline-custom {
       display: flex;
       align-items: center;
-      justify-content: flex-start; /* 좌측 정렬 */
-      gap: 20px; /* 항목 간 간격 */
+      justify-content: flex-start;
+      gap: 20px;
     }
 
     .form-inline-custom label {
@@ -57,7 +63,7 @@
 
     .form-inline-custom .form-control {
       width: auto;
-      max-width: 120px; /* 넓이를 적당하게 제한 */
+      max-width: 120px;
     }
   </style>
 </th:block>
@@ -97,7 +103,7 @@
       <div class="d-flex align-items-center ml-4">
         <label for="auctionPeriod" class="d-inline">경매 기간:</label>
         <select th:field="*{auctionPeriod}" id="auctionPeriod" class="form-control ml-2" required>
-          <option value="" th:text="'선택하세요'" disabled selected></option> <!-- 기본적으로 선택되지 않도록 -->
+          <option value="" th:text="'선택하세요'" disabled selected></option>
           <option value="1">1일</option>
           <option value="3">3일</option>
           <option value="5">5일</option>
@@ -118,7 +124,7 @@
     <button type="submit" class="btn btn-primary">등록</button>
   </form>
 
-  <a href="/auction/items" class="btn btn-link mt-3">리스트로 돌아가기</a> <!-- 경매 아이템 리스트 링크 -->
+  <a href="/auction/items" class="btn btn-link mt-3">리스트로 돌아가기</a>
 
 </div>
 

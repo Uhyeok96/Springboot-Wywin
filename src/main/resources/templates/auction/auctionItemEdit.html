@@ -38,6 +38,28 @@
       }
     }
 
+    // 폼 제출 전에 이미지 파일이 하나라도 있는지 확인
+    function validateForm() {
+      const fileInput = document.querySelectorAll('input[type="file"]');
+      let imageAdded = false;
+
+      // 입력 필드에 이미지가 하나라도 추가되었는지 확인
+      for (let i = 0; i < fileInput.length; i++) {
+        if (fileInput[i].files.length > 0) {
+          imageAdded = true;
+          break;
+        }
+      }
+
+      // 이미지가 없으면 경고 후 폼 제출 방지
+      if (!imageAdded) {
+        alert('이미지를 최소 1개 추가해야 합니다.');
+        return false; // 폼 제출을 막음
+      }
+
+      return true; // 폼 제출 허용
+    }
+
     // 뒤로가기 함수
     function goBack() {
       window.history.back(); // 이전 페이지로 이동
@@ -78,7 +100,7 @@
 
   <h1 class="mb-4">경매 물품 수정</h1>
 
-  <form th:action="@{/auction/item/{id}/update(id=${auctionItem.id})}" th:object="${auctionItem}" method="post" enctype="multipart/form-data">
+  <form th:action="@{/auction/item/{id}/update(id=${auctionItem.id})}" th:object="${auctionItem}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
 
     <!-- 상품명 -->
     <div class="form-group">
@@ -131,7 +153,7 @@
       <span class="image-info">대표이미지로 설정됩니다</span>
 
       <div id="fileInputs">
-        <input type="file" name="imageFiles" accept="image/*" class="form-control-file" onchange="validateFileInput()" />
+        <input type="file" name="imageFiles" accept="image/*" class="form-control-file" onchange="validateFileInput()" required />
       </div>
 
       <button type="button" class="btn btn-link mt-2" onclick="addFileInput()">이미지 추가</button>
