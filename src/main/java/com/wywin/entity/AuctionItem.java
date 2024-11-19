@@ -32,7 +32,7 @@ public class AuctionItem extends BaseEntity{
     private String itemLongDetail;  // 자세한 상품 설명
 
     @Column(nullable = false)
-    private Integer deposit = 0;  // 보증금
+    private Integer bidPrice;  // 경매 시작금액
 
     @Column(nullable = false)
     private Integer commission = 0;  // 수수료
@@ -42,9 +42,6 @@ public class AuctionItem extends BaseEntity{
 
     @Column(nullable = false)
     private Integer finalPrice = 0; // 최종 낙찰가
-
-    @Column(nullable = false)
-    private Integer bidPrice;  // 경매 시작금액
 
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus = ItemStatus.ONBID; // 상품 판매 상태
@@ -61,5 +58,9 @@ public class AuctionItem extends BaseEntity{
 
     @Column(nullable = false)
     private LocalDateTime auctionEndDate;  // 경매 종료 일시
+
+    // 예상 견적가 필드 추가
+    @Column(nullable = false)
+    private Integer estimatedPrice = 0; // 예상 견적가 (기본값은 0)
 
 }

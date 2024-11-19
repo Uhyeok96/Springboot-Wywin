@@ -6,8 +6,10 @@ import com.wywin.dto.AuctionItemDTO;
 import com.wywin.dto.MemberDTO;
 import com.wywin.entity.AuctionImg;
 import com.wywin.entity.AuctionItem;
+import com.wywin.entity.Bidding;
 import com.wywin.entity.Member;
 import com.wywin.repository.AuctionItemRepository;
+import com.wywin.repository.BiddingRepository;
 import com.wywin.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,9 +18,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +42,11 @@ public class AuctionService {
     @Autowired
     private final MemberRepository memberRepository;  // MemberRepository 의존성 주입
 
+    @Autowired
+    private final BiddingRepository biddingRepository;  // BiddingRepository 의존성 주입
+
+    private final ExchangeRateService exchangeRateService; // 환율 서비스 의존성 주입
+
     private final AuctionImgService auctionImgService; // 이미지 서비스 의존성 주입
 
     private final ModelMapper modelMapper = new ModelMapper(); // DTO와 엔티티 간 변환을 위한 ModelMapper
@@ -53,18 +63,23 @@ public class AuctionService {
         // AuctionItemDTO를 AuctionItem 엔티티로 변환
         AuctionItem auctionItem = modelMapper.map(auctionItemDTO, AuctionItem.class);
 
-        // 각 필드에 기본값을 설정
-        if (auctionItem.getDeposit() == null) {
-            auctionItem.setDeposit(0); // 기본값 설정
+        // 가격 설정: bidPrice와 동일하게 finalPrice 설정
+        if (auctionItem.getFinalPrice() == null || auctionItem.getFinalPrice() == 0) {
+            auctionItem.setFinalPrice(auctionItemDTO.getBidPrice()); // bidPrice와 동일하게 설정
         }
-        if (auctionItem.getCommission() == null) {
-            auctionItem.setCommission(0); // 기본값 설정
-        }
-        if (auctionItem.getPenalty() == null) {
-            auctionItem.setPenalty(0); // 기본값 설정
-        }
-        if (auctionItem.getFinalPrice() == null) {
-            auctionItem.setFinalPrice(0); // 기본값 설정
+
+        // 환율 계산하여 estimatedPrice 설정
+        Integer finalPrice = auctionItem.getFinalPrice();  // bidPrice와 동일
+        Integer estimatedPrice = exchangeRateService.calculateEstimatedPrice(auctionItem); // 환율 계산
+
+        // 계산된 예상견적가 설정
+        auctionItem.setFinalPrice(finalPrice); // 최종 가격 (bidPrice와 동일)
+        auctionItem.setEstimatedPrice(estimatedPrice); // 예상 가격
+
+        // 예상 견적가가 계산되면, 10%로 Commission과 Penalty 설정
+        if (estimatedPrice != null && estimatedPrice > 0) {
+            auctionItem.setCommission(calculateCommissionOrPenalty(estimatedPrice));
+            auctionItem.setPenalty(calculateCommissionOrPenalty(estimatedPrice));
         }
 
         // 경매 종료일 계산
@@ -199,35 +214,89 @@ public class AuctionService {
     }
 
     // 경매 아이템 소유자 확인
-    public void validateOwner(Long auctionItemId, String loggedInUser) {
+    public boolean validateOwner(Long auctionItemId, String loggedInUser) {
         // 아이템을 조회하고 예외 처리
         AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
                 .orElseThrow(() -> new RuntimeException("아이템을 찾을 수 없습니다."));
 
         // 등록자와 로그인 사용자가 동일한지 확인
-        if (!auctionItem.getCreatedBy().equals(loggedInUser)) {
-            throw new RuntimeException("수정 또는 삭제할 권한이 없습니다.");
-        }
+        return auctionItem.getCreatedBy().equals(loggedInUser);
     }
 
     // 입찰 처리
-    public void placeBid(Long itemId, Integer bidAmount) {
+    public String placeBid(Long itemId, Integer bidAmount, String loggedInUser) {
         // 경매 아이템 조회
         AuctionItem auctionItem = auctionItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("경매 아이템을 찾을 수 없습니다."));
 
-        // 입찰 금액이 시작 가격보다 낮으면 예외 처리
-        if (bidAmount < auctionItem.getBidPrice()) {
-            throw new IllegalArgumentException("입찰 금액은 시작 가격보다 커야 합니다.");
+        // 상품 등록자와 로그인 사용자가 동일한지 확인
+        if (auctionItem.getCreatedBy().equals(loggedInUser)) {
+            throw new RuntimeException("상품 등록자는 입찰에 참여할 수 없습니다.");
         }
 
-        // 입찰 금액이 최종 가격보다 높으면 finalPrice 갱신
-        if (auctionItem.getFinalPrice() == null || bidAmount > auctionItem.getFinalPrice()) {
+        // 현재 입찰 정보를 가져오기 (최신 입찰 기록을 조회)
+        Bidding currentBid = biddingRepository.findTopByAuctionItemOrderByIdDesc(auctionItem);
+
+        // 만약 입찰 기록이 없다면 첫 입찰
+        if (currentBid == null) {
+            // 첫 입찰 시 처리: 입찰 금액이 시작 가격보다 커야 함
+            if (bidAmount <= auctionItem.getBidPrice()) {
+                throw new IllegalArgumentException("첫 입찰 금액은 시작 가격보다 커야 합니다.");
+            }
+
+            // 첫 입찰 시 처리
+            saveNewBid(auctionItem, loggedInUser, bidAmount, null);  // 첫 입찰이므로 previousBidder는 null
+            return getMemberByEmail(loggedInUser).getNickName();  // 첫 입찰자의 닉네임 반환
+        }
+
+        // 현재 입찰자와 로그인한 사용자가 동일한지 확인
+        if (currentBid.getCurrentBidder().equals(loggedInUser)) {
+            throw new IllegalArgumentException("동시에 여러 번 입찰은 불가합니다.");
+        }
+
+        // 입찰 금액이 최종 가격보다 높으면 finalPrice 갱신 (최초 입찰 후)
+        if (bidAmount > auctionItem.getFinalPrice()) {
             auctionItem.setFinalPrice(bidAmount);  // 최종 낙찰가 갱신
             auctionItemRepository.save(auctionItem);  // 변경 사항 저장
+
+            // 예상 견적가 계산 (finalPrice에 맞춰 환율 적용)
+            Integer estimatedPrice = exchangeRateService.calculateEstimatedPrice(auctionItem);
+            auctionItem.setEstimatedPrice(estimatedPrice);  // 예상 견적가 설정
+
+            auctionItemRepository.save(auctionItem);  // 예상 견적가도 DB에 저장
         } else {
             throw new IllegalArgumentException("입찰 금액은 현재 가격보다 커야 합니다.");
         }
+
+        // 현재 입찰자 닉네임 조회
+        MemberDTO currentMember = getMemberByEmail(loggedInUser);  // 현재 입찰자 닉네임 조회
+        String currentNickname = currentMember.getNickName();  // 현재 입찰자의 닉네임 가져오기
+
+        // 이전 입찰자 닉네임을 현재 입찰자의 닉네임으로 설정하고, 기존 입찰자 정보 갱신
+        String previousNickname = currentBid.getCurrentBidder(); // 기존 입찰자가 현재 입찰자였으므로 그 닉네임을 이전 입찰자에 설정
+
+        // 새로운 입찰 기록을 생성
+        Bidding newBid = new Bidding();
+        newBid.setAuctionItem(auctionItem);
+        newBid.setCurrentBidder(currentNickname);  // 새로운 입찰자의 닉네임을 현재 입찰자 필드에 설정
+        newBid.setPreviousBidder(previousNickname);  // 기존 입찰자 닉네임을 이전 입찰자 필드에 설정
+        newBid.setBiddingPrice(bidAmount);  // 새로운 입찰 금액
+        newBid.setDeposit(bidAmount * 10 / 100);  // 예시로 보증금을 금액의 10%로 설정
+
+        // 새로운 입찰 기록 저장
+        biddingRepository.save(newBid);
+
+        // 닉네임을 반환 (컨트롤러에서 사용할 수 있도록)
+        return currentNickname;
+    }
+
+
+    // 입찰 금액이 갱신된 후 상품 정보 가져오기
+    public AuctionItemDTO getUpdatedAuctionItem(Long id) {
+        AuctionItem auctionItem = auctionItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
+        return modelMapper.map(auctionItem, AuctionItemDTO.class);
     }
 
     // 이메일을 이용해 회원 정보를 조회하는 메서드
@@ -242,4 +311,29 @@ public class AuctionService {
         return modelMapper.map(member, MemberDTO.class);
     }
 
+    // 예상 견적가의 10%로 Commission 또는 Penalty 계산
+    private Integer calculateCommissionOrPenalty(Integer estimatedPrice) {
+        if (estimatedPrice == null || estimatedPrice == 0) {
+            return 0;  // 예상 견적가가 없으면 0 반환
+        }
+        // 예상 견적가의 10% 계산 (소수점 이하는 올림 처리)
+        BigDecimal commissionOrPenalty = new BigDecimal(estimatedPrice).multiply(BigDecimal.valueOf(0.10));
+        return commissionOrPenalty.setScale(0, RoundingMode.CEILING).intValue();  // 10%를 올림 처리한 후 Integer로 반환
+    }
+
+    // 새로운 입찰을 저장하는 메서드
+    private void saveNewBid(AuctionItem auctionItem, String loggedInUser, Integer bidAmount, String previousBidder) {
+        // 로그인한 사용자의 이메일을 통해 닉네임을 가져옵니다.
+        MemberDTO member = getMemberByEmail(loggedInUser);
+        String currentNickname = member.getNickName();  // 현재 입찰자의 닉네임
+
+        Bidding newBid = new Bidding();
+        newBid.setAuctionItem(auctionItem);
+        newBid.setCurrentBidder(currentNickname);  // 첫 입찰이므로 현재 입찰자 닉네임을 설정
+        newBid.setPreviousBidder(previousBidder);  // 첫 입찰인 경우 null, 이후 입찰에서는 이전 입찰자 닉네임
+        newBid.setBiddingPrice(bidAmount);  // 첫 입찰 금액
+        newBid.setDeposit(bidAmount * 10 / 100);  // 보증금을 10%로 설정
+
+        biddingRepository.save(newBid);  // 새로운 입찰 기록 저장
+    }
 }

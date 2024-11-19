@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="css">
+  <style>
+    .bd{padding-left: 10px;}
+    h3{font-family:"맑은 고딕";}
+  </style>
+</th:block>
+
+<div layout:fragment="content">
+  <dib th:class="bd">
+
+  </dib>
+
+</div>
+</html>

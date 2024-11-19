@@ -15,7 +15,7 @@
   <link rel="stylesheet" th:href="@{/css/auctionItemList.css}" />
 </th:block>
 
-<div layout:fragment="content">
+<div layout:fragment="content" class="content-wrapper">
 
   <!-- 새 상품 등록 버튼 -->
   <div class="new-item-container">
@@ -62,7 +62,16 @@
         </div>
         <div class="card-title" th:text="${item.itemName}"></div>
         <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
-        <div class="card-bid-price">시작 금액: <span th:text="${item.bidPrice}"></span>원</div>
+        <div class="card-bid-price">
+          시작 금액:
+          <span th:text="${item.bidPrice}"></span>
+          <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
+            <span th:case="'KRW'">₩(원)</span>
+            <span th:case="'JPY'">¥(엔)</span>
+            <span th:case="'USD'">$(달러)</span>
+            <span th:case="*"> </span> <!-- 기본 처리되지 않은 경우 공백 처리 -->
+          </span>
+        </div>
       </a>
     </div>
   </div>
@@ -78,7 +87,16 @@
           <div class="item-details" style="flex-grow: 1;">
             <div class="card-title" th:text="${item.itemName}"></div> <!-- 제목 아래 줄이 그어져야 함 -->
             <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
-            <div class="card-bid-price">시작 금액: <span th:text="${item.bidPrice}"></span>원</div>
+            <div class="card-bid-price">
+              시작 금액:
+              <span th:text="${item.bidPrice}"></span>
+              <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
+                <span th:case="'KRW'">₩(원)</span>
+                <span th:case="'JPY'">¥(엔)</span>
+                <span th:case="'USD'">$(달러)</span>
+                <span th:case="*"> </span>
+              </span>
+            </div>
           </div>
         </a>
       </li>
@@ -86,20 +104,23 @@
   </div>
 
   <!-- 페이징 처리 -->
-  <div class="pagination-container" th:if="${auctionItems.totalPages > 1}">
+  <div class="pagination-container" th:if="${auctionItems.totalPages > 0}">
     <ul class="pagination">
+      <!-- 이전 페이지 버튼 -->
       <li class="page-item" th:classappend="${auctionItems.hasPrevious()} ? '' : 'disabled'">
-        <a th:href="@{/auction/items(page=${auctionItems.number - 1}, size=${auctionItems.size}, view=${view})}" class="page-link">이전</a>
+        <a th:href="@{/auction/items(page=${auctionItems.number}, size=${auctionItems.size}, view=${view})}" class="page-link">이전</a>
       </li>
 
+      <!-- 페이지 번호들 -->
       <th:block th:each="page : ${#numbers.sequence(1, auctionItems.totalPages)}">
         <li class="page-item" th:classappend="${auctionItems.number + 1 == page} ? 'active' : ''">
-          <a th:href="@{/auction/items(page=${page - 1}, size=${auctionItems.size}, view=${view})}" class="page-link" th:text="${page}"></a>
+          <a th:href="@{/auction/items(page=${page}, size=${auctionItems.size}, view=${view})}" class="page-link" th:text="${page}"></a>
         </li>
       </th:block>
 
+      <!-- 다음 페이지 버튼 -->
       <li class="page-item" th:classappend="${auctionItems.hasNext()} ? '' : 'disabled'">
-        <a th:href="@{/auction/items(page=${auctionItems.number + 1}, size=${auctionItems.size}, view=${view})}" class="page-link">다음</a>
+        <a th:href="@{/auction/items(page=${auctionItems.number + 2}, size=${auctionItems.size}, view=${view})}" class="page-link">다음</a>
       </li>
     </ul>
   </div>

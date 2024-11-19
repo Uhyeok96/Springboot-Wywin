@@ -26,4 +26,10 @@ public class Bidding extends BaseEntity{
 
     private String previousBidder;  // 이전 입찰자 이메일 (첫 입찰 시 null)
 
+    @Column(nullable = false)
+    private Integer deposit = 0;    // 보증금 (입찰 시 지불한 보증금)
+
+    @Column(nullable = false)
+    private Integer biddingPrice;   // 입찰 금액 (입찰 시 기록되는 금액)
+
 }

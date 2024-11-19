@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+  <title>오류 발생</title>
+</head>
+<body>
+<h1>문제가 발생했습니다</h1>
+<p th:text="${errorMessage}"></p>
+<a href="/">홈으로 돌아가기</a>
+</body>
+</html>

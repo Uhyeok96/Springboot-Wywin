@@ -18,7 +18,7 @@
   <form name="myPageFrm" action="/members/update" method="post" style="float: right; justify-content:center;" >
 
     <div class="myPage-row">
-      <label th:for="email">이름</label>
+      <label th:for="name">이름</label>
       <input type="text" name="name" th:value="${member.name}" readonly>
     </div>
 
@@ -46,8 +46,8 @@
       <button type="submit" class="btn btn-primary">저장하기</button>
     </div>
 
-    <input type="hidden" th:name="${_csrf.parameterName}"
-           th:value="${_csrf.token}">
+    <!--<input type="hidden" th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">-->
 
   </form>
 

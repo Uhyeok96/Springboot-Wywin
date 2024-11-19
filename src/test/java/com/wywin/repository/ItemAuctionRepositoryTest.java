@@ -20,7 +20,6 @@ class ItemAuctionRepositoryTest {
     public void createItemTest(){                       // 아이템 생성 테스트
         AuctionItem item = new AuctionItem();
         item.setItemName("테스트 상품");
-        item.setDeposit(10000);
         item.setCommission(10000);
         item.setFinalPrice(10000);
         item.setBidPrice(10000);

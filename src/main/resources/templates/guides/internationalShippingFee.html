@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="css">
+<style>
+  .bd{padding-left: 10px;}
+  h3{font-family:"맑은 고딕";}
+  table{border: 1px;}
+  td{text-align: center;}
+  .title{font-size: 1.5em;}
+  .warn{color: red;}
+</style>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="bd">
+    <h4>배송수단별 국제배송 요금표(US$기분)</h4>
+    <table class="table">
+      <tr>
+        <td>중량(g)</td>
+        <td>EMS</td>
+        <td>항공일반</td>
+        <td>해운일반</td>
+        <td>해운특수</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>3~10일</td>
+        <td>4~6일</td>
+        <td>5~8일</td>
+        <td>5~8일</td>
+      </tr>
+      <tr>
+        <td>500</td>
+        <td>19.5</td>
+        <td>8.9</td>
+        <td rowspan="6">16</td>
+        <td rowspan="6">16</td>
+      </tr>
+      <tr>
+        <td>600</td>
+        <td>21</td>
+        <td rowspan="5">12.5</td>
+      </tr>
+      <tr>
+        <td>700</td>
+        <td>22.5</td>
+      </tr>
+      <tr>
+        <td>800</td>
+        <td>24</td>
+      </tr>
+      <tr>
+        <td>900</td>
+        <td>25.5</td>
+      </tr>
+      <tr>
+        <td>1k</td>
+        <td>27</td>
+      </tr>
+      <tr>
+        <td>1.25k</td>
+        <td>30</td>
+        <td rowspan="2">15</td>
+        <td rowspan="4">18.5</td>
+        <td rowspan="4">18.5</td>
+      </tr>
+      <tr>
+        <td>1.5k</td>
+        <td>33</td>
+      </tr>
+      <tr>
+        <td>1.75k</td>
+        <td>36</td>
+        <td rowspan="2">17.5</td>
+      </tr>
+      <tr>
+        <td>2k</td>
+        <td>39</td>
+      </tr>
+
+    </table>
+    <br />
+
+     <h4>배송수단별 장단점</h4>
+    <p>
+      <span class="title">항공일반</span><br />
+      - 가격대비 안전한 배송수단<br />
+      - 배송추적으로 화물위치 확인가능<br />
+      - 우체국 규격에 맞지 않는 부피의 상품에는 추가 비용이 발생 가능<br />
+      <span class="warn">- 유리 및 도자기제품, 상품케이스파손등은 보상이 불가능</span><br />
+      -부피무게 적용<br />
+      <br />
+      <span class="title">해운일반</span><br />
+      - 실무게만 적용<br />
+      - 배송추적으로 화물위치 확인가능<br />
+      - 항공일반보다 하루정도 빠른 운송이 가능할 때도 있음<br />
+      <span class="warn">- 유리 및 도자기제품, 상품케이스파손등은 보상이 불가능</span><br />
+      <br />
+      <span class="title">EMS</span><br />
+      - 현존하는 가장 빠른 운송수단<br />
+      - 우체국(EMS) 배송추적으로 화물위치 확인가능(카카오톡 알림 서비스)br />
+      - 가로+세로+높이의 합계가 1.5m이상일시 발송 불가능<br />
+      <span class="warn">- 유리 및 도자기제품, 상품케이스파손등은 보상이 불가능</span><br />
+
+    </p>
+
+  </div>
+
+</div>
+</html>

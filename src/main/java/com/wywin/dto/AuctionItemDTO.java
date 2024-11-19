@@ -1,5 +1,8 @@
 package com.wywin.dto;
 
+import com.wywin.constant.CurrencyType;
+import com.wywin.constant.ItemStatus;
+import com.wywin.entity.AuctionItem;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -32,9 +35,6 @@ public class AuctionItemDTO {
     @NotNull(message = "경매 시작금액은 필수입니다.")
     private Integer bidPrice;   // 경매 시작금액
 
-    // 보증금, 수수료, 벌금, 최종 낙찰가는 선택적이므로 @NotNull 제거
-    private Integer deposit;  // 보증금
-
     private Integer commission;  // 수수료
 
     private Integer penalty;  // 벌금
@@ -56,4 +56,12 @@ public class AuctionItemDTO {
 
     private String modifiedBy; // 수정자
 
+    @NotNull(message = "화폐 종류는 필수입니다.")
+    private CurrencyType currencyType = CurrencyType.KRW; // 화폐 종류 (기본값은 KRW)
+
+    @NotNull(message = "상품 상태는 필수입니다.")
+    private ItemStatus itemStatus = ItemStatus.ONBID; // 경매 상품 상태 (기본값은 ONBID)
+
+    // 예상 견적가 필드 추가
+    private Integer estimatedPrice = 0; // 예상 견적가
 }

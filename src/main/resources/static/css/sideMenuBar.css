@@ -1,0 +1,173 @@
+/* 노멀라이즈 시작 */
+body, ul, li {
+    margin: 0;
+    padding: 0;
+    list-style: none;   	    /* 해당 태그의 list-style을 none으로 하는 것으로 ●을 제거한다 */
+}
+
+a {
+    color: inherit;   	    /* 부모 엘리먼트의 값을 물려받는다 */
+    text-decoration: none;    /* 해당 태그의 text-decoration 속성을 none 값으로 하는 것으로 밑줄을 제거한다 */
+}
+/* 노멀라이즈 끝 */
+
+/* 2차 이상의 메뉴를 숨기기 */
+.side-bar > ul ul {
+    display: none;
+}
+
+/* 사이트의 높이를 5000px로 만들어 스크롤 생성 */
+/*body {
+    height:5000px ;
+    background-color: yellow;
+}*/
+
+/* 사이드바의 너비와 높이를 변수를 통해 통제 */
+:root {
+    --side-bar-width: 270px;    /* 사이드바 너비를 270px로 설정 */
+    --side-bar-height: 90vh;    /* 사이드바 높이를 화면의 90%로 설정 */
+}
+
+.side-bar {
+    position: fixed;    /* 스크롤을 따라오도록 지정 */
+    background-color: black;
+    width: var(--side-bar-width);   /* 사이드바 너비를 변수로 설정 */
+    min-height: calc((var(--side-bar-height) * 2 ) / 3);
+    margin-top: calc((100vh - var(--side-bar-height))/2);
+    left: -5px;
+}
+
+/* 사이드바 아이콘의 박스 설정 */
+.side-bar__icon-box {
+    display: flex;              /* 플렉스 박스를 사용하여 아이콘을 배치 */
+    justify-content: flex-end;  /* 아이콘을 오른쪽 끝으로 정렬 */
+}
+
+/* 아이콘의 기본 크기 및 위치 설정 */
+.side-bar__icon-1 {
+    position: relative;         /* 자식 div들의 절대 위치를 설정할 수 있도록 relative로 설정 */
+    width: 23px;                /* 아이콘 너비 설정 */
+    height: 17px;               /* 아이콘 높이 설정 */
+    margin: 15px;               /* 아이콘 주변에 15px 마진 설정 */
+    margin-top: 20px;           /* 아이콘 상단에 20px 마진 추가 */
+    transition: .5s;            /* 아이콘 전체에 애니메이션을 0.5초 동안 적용 */
+}
+
+/* :root에서 아이콘 애니메이션 시간을 변수로 설정 */
+:root {
+    --side-bar__icon: .5s;      /* 아이콘 애니메이션 지속 시간 설정 */
+}
+
+/* 아이콘을 이루는 3개의 div 스타일 설정 */
+.side-bar__icon-1 > div {
+    position: absolute;         /* 아이콘의 각 부분을 절대 위치로 설정 */
+    width: 100%;                /* 너비 100%로 설정 (부모에 맞춤) */
+    height: 20%;                /* 높이를 20%로 설정 */
+    background-color: white;    /* 아이콘의 색을 흰색으로 설정 */
+    transition: all var(--side-bar__icon); /* 모든 속성에 애니메이션 적용 */
+}
+
+/* 첫 번째 div (상단의 바) */
+.side-bar__icon-1 > div:nth-of-type(1) {
+    top: 0;                     /* 상단에 위치하도록 설정 */
+    width: auto;                /* 너비 자동 설정 */
+    left: 0;                    /* 왼쪽 끝에 위치 */
+    right: 0;                   /* 오른쪽 끝에 위치 */
+    transition: all var(--side-bar__icon),
+    left calc(var(--side-bar__icon) / 2) calc(var(--side-bar__icon) / 2),
+    right calc(var(--side-bar__icon) / 2) calc(var(--side-bar__icon) / 2),
+    height calc(var(--side-bar__icon) / 2) 0s; /* 마우스를 올릴 때 애니메이션 처리 */
+}
+
+/* 두 번째 div (중간의 바) */
+.side-bar__icon-1 > div:nth-of-type(2) {
+    top: 40%;                   /* 위에서 40% 위치 */
+    transform-origin: bottom left; /* 회전 기준점을 왼쪽 하단으로 설정 */
+}
+
+/* 세 번째 div (하단의 바) */
+.side-bar__icon-1 > div:nth-of-type(3) {
+    top: 80%;                   /* 위에서 80% 위치 */
+    left: auto;                 /* 기본적으로 left는 auto로 설정 */
+    right: 0;                   /* 오른쪽 끝에 위치 */
+    transform-origin: bottom right; /* 회전 기준점을 오른쪽 하단으로 설정 */
+}
+
+/* 사이드바에 마우스를 올리면 아이콘이 변형되도록 설정 */
+.side-bar:hover .side-bar__icon-1 {
+    transform: translate(-198px, 0); /* 아이콘을 왼쪽으로 198px 이동 */
+}
+
+/* 마우스를 올리면 두 번째 아이콘 (중간의 바)이 45도 회전 */
+.side-bar:hover .side-bar__icon-1 > div:nth-of-type(2) {
+    transform: rotate(45deg);     /* 45도 회전 */
+    width: 70.5%;                 /* 너비 변경 */
+    height: 25%;                  /* 높이 변경 */
+}
+
+/* 마우스를 올리면 세 번째 아이콘 (하단의 바)이 -45도 회전 */
+.side-bar:hover .side-bar__icon-1 > div:nth-of-type(3) {
+    top: 40%;                     /* 위치 변경 */
+    transform: rotate(-45deg);    /* -45도 회전 */
+    width: 70.5%;                 /* 너비 변경 */
+    height: 25%;                  /* 높이 변경 */
+}
+
+/* 마우스를 올리면 첫 번째 아이콘 (상단의 바)의 위치와 크기 변화 */
+.side-bar:hover .side-bar__icon-1 > div:nth-of-type(1) {
+    left: 41%;                    /* 왼쪽 위치 변경 */
+    right: 41%;                   /* 오른쪽 위치 변경 */
+    height: 100%;                 /* 높이를 100%로 확장 */
+    transition: all var(--side-bar__icon),
+    left calc(var(--side-bar__icon) / 2) 0s,
+    right calc(var(--side-bar__icon) / 2) 0s,
+    height calc(var(--side-bar__icon) / 2) calc(var(--side-bar__icon) / 2); /* 애니메이션 효과 */
+}
+
+/* 아이콘 끝 */
+
+
+
+/* 모든 메뉴의 a에 속성값 부여 */
+.side-bar ul > li > a {
+    display: block; /* 링크를 block 요소로 설정하여 전체 영역을 클릭 가능하게 만듦 */
+    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 50px;
+}
+
+/* 자식의 position이 absolute일 때 자식을 영역 안에 가두어 준다 */
+.side-bar > ul > li {
+    position: relative;
+}
+
+/* 모든 메뉴가 마우스 인식 시 반응 */
+.side-bar ul > li:hover > a {
+    background-color: #555;
+    border-bottom: 1px solid #999;
+}
+
+/* 1차 메뉴의 항목이 마우스 인식 시에 2차 메뉴 등장 */
+.side-bar > ul > li:hover > ul {
+    display: block;
+    position: absolute;
+    background-color: #888;
+    top: 0;         /* 2차 메뉴의 상단을 1차 메뉴의 상단에 고정 */
+    left: 100%;     /* 2차 메뉴를 1차 메뉴의 너비만큼 이동 */
+    width: 100%;    /* 1차 메뉴의 너비를 상속 */
+}
+
+/* 사이드바 너비의 80%만큼 왼쪽으로 이동 */
+.side-bar {
+    border-radius: 20px;
+    transform: translate(calc(var(--side-bar-width) * -0.9), 0);  /* X축 이동, Y축 고정 */
+    transition: .5s;
+}
+
+/* 마우스 인식 시 원래의 위치로 이동 */
+.side-bar:hover {
+    transform: translate(-20px, 0);   /* 둥근 모서리의 너비만큼 X축 이동, Y축 고정 */
+}

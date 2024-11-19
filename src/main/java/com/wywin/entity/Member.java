@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Getter
 @Setter
 @ToString
-public class Member extends BaseEntity{
+public class Member extends BaseEntity /*implements UserDetails*/ {
 
     @Id
     @Column(name = "member_id")
@@ -42,11 +42,13 @@ public class Member extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private Role role; // 권한
 
+    private boolean enabled=false; // 계정 활성화 여부
+
     public static Member createMember(MemberDTO memberDTO, PasswordEncoder passwordEncoder){
         /*Member entity를 생성하는 메소드. Member entity에 회원을 생성하는 메소드를 만들어서 관리를 한다면 코드가 변경되더라도 한 군데만 수정하면 된다.*/
 
         Member member = new Member();
-        member.setName(memberDTO.getName());/*입력받은 이름을 db에 저장*/
+        member.setName(memberDTO.getName());
         member.setEmail(memberDTO.getEmail());
         member.setAddress(memberDTO.getAddress());
         member.setPhoneNum(memberDTO.getPhoneNum());
@@ -69,7 +71,42 @@ public class Member extends BaseEntity{
         this.phoneNum = phoneNum;
     }
 
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
+   /*
+   // UserDetails 메서드 구현
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // 권한 반환
+        // ex) "ROLE_USER" 또는 "ROLE_ADMIN"
+        return null;
     }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override // 계정이 만료되었는지 확인하는 메서드
+              // @return 계정이 만료되지 않으면 true, 만료되었으면 false
+    public boolean isAccountNonExpired() {
+        return true; // 현재는 만료된 계정을 고려하지 않음
+    }
+
+    @Override // 계정이 잠겨있는지 확인하는 메서드
+              // @return 계정이 잠겨있지 않으면 true, 잠겨있으면 false
+    public boolean isAccountNonLocked() {
+        return true; // 현재는 계정 잠금을 고려하지 않음
+    }
+
+    @Override // 자격 증명이 만료되었는지 확인하는 메서드
+              // @return 자격증명이 만료되지 않았으면 true, 만료되었으면 false
+    public boolean isCredentialsNonExpired() {
+        return true; // 현재는 자격 증명의 만료를 고려하지 않음
+    }
+
+    @Override // 계정이 활성화 되어있는지 확인하는 메서드
+              // @return 활성화되어 있으면 true, 비활성화되어 있으면 false
+    public boolean isEnabled() {
+        return enabled;
+    }
+    */
 }

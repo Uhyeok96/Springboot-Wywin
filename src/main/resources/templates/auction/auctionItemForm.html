@@ -97,7 +97,16 @@
       <div class="d-flex align-items-center">
         <label class="d-inline">경매 시작금액:</label>
         <input type="number" th:field="*{bidPrice}" class="form-control d-inline" style="width: 120px;" required/>
-        <span class="ml-2">원</span>
+      </div>
+
+      <!-- 화폐 종류 선택 -->
+      <div class="d-flex align-items-center ml-4">
+        <label for="currencyType" class="d-inline">화폐 종류:</label>
+        <select th:field="*{currencyType}" id="currencyType" class="form-control ml-2" required>
+          <option value="KRW">원 (KRW)</option>
+          <option value="JPY">엔 (JPY)</option>
+          <option value="USD">달러 (USD)</option>
+        </select>
       </div>
 
       <div class="d-flex align-items-center ml-4">
@@ -124,7 +133,7 @@
     <button type="submit" class="btn btn-primary">등록</button>
   </form>
 
-  <a href="/auction/items" class="btn btn-link mt-3">리스트로 돌아가기</a>
+  <a href="/auction/items" class="btn btn-link mt-3 mb-5">리스트로 돌아가기</a>
 
 </div>
 

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+           /* max-width: 800px;*/
+            height: auto;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</th:block>
+
+
+
+<div layout:fragment="content">
+
+    <div class="container">
+        <h1>운송비용계산</h1>
+        <!-- form 태그에 th:action="@"를 사용하여 POST 요청으로 전송 -->
+        <form th:action="@{/guides/calculator}" th:object="${calculatedCostDTO}" method="post">
+            <label th:for="distance">운송 거리 (km):</label>
+            <input type="number" th:field="*{distance}" required>
+
+            <label th:for="weight">화물 무게 (kg):</label>
+            <input type="number" th:field="*{weight}" required>
+
+            <label th:for="volume">화물 부피 (m³):</label>
+            <input type="number" th:field="*{volume}" required>
+
+            <label th:for="ratePerKg">kg당 요금 (USD/kg):</label>
+            <input type="number" th:field="*{ratePerKg}" required>
+
+            <label th:for="volumetricFactor">부피 환산 비율:</label>
+            <input type="number" th:field="*{volumetricFactor}" value="166" required>
+
+            <label th:for="fixedFee">고정 비용 (USD):</label>
+            <input type="number" th:field="*{fixedFee}" required>
+
+            <button type="submit">운송비용 계산</button>
+        </form>
+
+        <div th:if="${calculatedCost != null}">
+            <h3>계산된 운송비용: <span th:text="${calculatedCost}"></span> USD</h3>
+        </div>
+    </div>
+
+    <th:block layout:fragment="script">
+        <script>
+            // 폼 제출 시 항공 운송비용을 계산하는 함수
+            document.getElementById("shippingForm").addEventListener("submit", function(event) {
+                event.preventDefault(); // 폼 제출 기본 동작을 막음
+
+                // 입력값을 가져오기
+                const distance = parseFloat(document.getElementById("distance").value);
+                const weight = parseFloat(document.getElementById("weight").value);
+                const volume = parseFloat(document.getElementById("volume").value);
+                const ratePerKg = parseFloat(document.getElementById("ratePerKg").value);
+                const volumetricFactor = parseFloat(document.getElementById("volumetricFactor").value);
+                const fixedFee = parseFloat(document.getElementById("fixedFee").value);
+
+                // 요청할 데이터 생성
+                const data = {
+                    distance: distance,
+                    weight: weight,
+                    volume: volume,
+                    ratePerKg: ratePerKg,
+                    volumetricFactor: volumetricFactor,
+                    fixedFee: fixedFee
+                };
+
+                const ClickCalculate = () => {
+                    // API 호출
+                    fetch("/api/guides/calculator", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("네트워크 응답이 정상적이지 않습니다.");
+                            }
+                            return response.json();
+                        })
+                        .then(result => {
+                            // 계산된 결과를 화면에 표시
+                            console.log(result);
+                            document.getElementById("result").style.display = "block";
+                            document.getElementById("calculatedCost").textContent = result.toFixed(2); // 소수점 2자리로 표시
+                        })
+                        .catch(error => {
+                            console.error("Error calculating cost:", error);
+                            alert("오류가 발생했습니다. 다시 시도해 주세요.");
+                        });
+                }
+            });
+        </script>
+    </th:block>
+
+</div>
+</html>

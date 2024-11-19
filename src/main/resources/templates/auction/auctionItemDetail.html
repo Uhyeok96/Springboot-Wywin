@@ -5,8 +5,8 @@
 
 <head>
     <!-- CSRF 토큰 메타 태그 -->
-    <meta name="_csrf" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <!--<meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />-->
 </head>
 
 <th:block layout:fragment="script">
@@ -37,11 +37,6 @@
             // 서버에서 전달받은 finalPrice 값 처리
             let finalPrice = parseInt("[[${auctionItem.finalPrice}]]");
             const bidPrice = parseInt("[[${auctionItem.bidPrice}]]");
-
-            // finalPrice가 null 또는 NaN이면 bidPrice로 초기화
-            if (isNaN(finalPrice) || finalPrice <= 0) {
-                finalPrice = bidPrice;
-            }
 
             // 현재 가격 표시 업데이트
             document.getElementById('currentPrice').textContent = finalPrice;
@@ -178,13 +173,21 @@
     <!-- 상품 이름 -->
     <div class="item-title-wrapper">
         <h2 class="item-title" th:text="${auctionItem.itemName}"></h2>
+
         <!-- 수정, 삭제 버튼 추가 -->
-        <div th:if="${canEdit}" class="item-buttons">
-            <!-- 수정 링크 -->
-            <a th:href="@{/auction/item/{id}/update(id=${auctionItem.id})}" class="action-link">수정</a>
-            <!-- 삭제 링크 -->
-            <a href="#" class="action-link" th:href="@{'/auction/item/' + ${auctionItem.id} + '/delete'}"
-               th:attr="onclick='confirmDelete(event, this.href)'">삭제</a>
+        <div class="item-buttons">
+            <!-- 수정 버튼 (권한이 있을 때만 표시) -->
+            <div th:if="${canEdit}">
+                <a th:href="@{/auction/item/{id}/update(id=${auctionItem.id})}" class="action-link">수정</a>
+            </div>
+
+            <!-- 삭제 버튼 (권한이 있을 때만 표시) -->
+            <div th:if="${canDelete}">
+                <!-- 삭제 버튼을 form 태그로 감싸 POST 방식으로 요청 보내기 -->
+                <form th:action="@{'/auction/item/' + ${auctionItem.id} + '/delete'}" method="post" style="display:inline;">
+                    <button type="submit" class="action-link" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -216,21 +219,33 @@
                 </div>
                 <div class="item-start-price">
                     <span>개시 가격:</span>
-                    <span class="price" th:text="${auctionItem.bidPrice}"></span> 원
+                    <span class="price" th:text="${auctionItem.bidPrice}"></span>
+                    <span th:switch="${#strings.trim(auctionItem.currencyType)}">
+                        <span th:case="'KRW'">원(KRW)</span>
+                        <span th:case="'JPY'">엔(JPY)</span>
+                        <span th:case="'USD'">달러(USD)</span>
+                        <span th:case="*">기본화폐</span> <!-- 기본값 처리 -->
+                    </span>
                 </div>
                 <div class="item-price">
                     <span>현재 가격:</span>
-                    <span class="price" id="currentPrice"></span> 원
+                    <span class="price" id="currentPrice"></span>
+                    <span th:switch="${#strings.trim(auctionItem.currencyType)}">
+                        <span th:case="'KRW'">원(KRW)</span>
+                        <span th:case="'JPY'">엔(JPY)</span>
+                        <span th:case="'USD'">달러(USD)</span>
+                        <span th:case="*">기본화폐</span> <!-- 기본값 처리 -->
+                    </span>
                 </div>
                 <div class="item-estimated">
                     <span>예상 견적가:</span>
-                    <!--<span class="price" th:text="${auctionItem.estimatedPrice}"></span> 원-->
+                    <span th:text="${auctionItem.estimatedPrice}"></span> 원
                 </div>
             </div>
 
             <form id="bidForm" th:action="@{/auction/item/{id}/bid(id=${auctionItem.id})}" method="POST">
             <!-- CSRF 토큰 추가 -->
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                <!--<input type="hidden" name="_csrf" th:value="${_csrf.token}" />-->
 
                 <div class="info-box small-box">
                     <div class="bid-amount">
@@ -239,7 +254,9 @@
                     </div>
                     <div class="seller-note">
                         <label for="memo">현재 최종입찰자:</label>
-                        <input type="text" id="memo" name="memo" value="${finalBidder}" readonly />
+                        <input type="text" id="memo" name="memo"
+                               th:value="${finalBidder != null ? finalBidder : '입찰자 없음'}"
+                               readonly />
                     </div>
                 </div>
 
