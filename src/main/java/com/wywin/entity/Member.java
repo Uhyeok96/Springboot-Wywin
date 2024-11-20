@@ -56,8 +56,8 @@ public class Member extends BaseEntity /*implements UserDetails*/ {
         String password = passwordEncoder.encode(memberDTO.getPassword());
         /* 입력받은 비밀번호를 BCryptPasswordEncoder Bean을 파라미터로 넘겨서 비밀번호 암호화*/
         member.setPassword(password); /* encoding된 비밀번호를 db에 저장*/
-        member.setRole(Role.USER);/* user권한 부여*/
-        //member.setRole(Role.ADMIN);/* ADMIN권한 부여*/
+        //member.setRole(Role.USER);/* user권한 부여*/
+        member.setRole(Role.ADMIN);/* ADMIN권한 부여*/
         return member;
     }   // 회원 생성용 메서드 (dto와 암호화를 받아 Member 객체 리턴)
 

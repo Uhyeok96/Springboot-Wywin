@@ -12,6 +12,7 @@ import com.wywin.repository.AuctionItemRepository;
 import com.wywin.repository.BiddingRepository;
 import com.wywin.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,15 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Log4j2
 public class AuctionService {
 
     @Autowired
@@ -68,7 +67,7 @@ public class AuctionService {
             auctionItem.setFinalPrice(auctionItemDTO.getBidPrice()); // bidPrice와 동일하게 설정
         }
 
-        // 환율 계산하여 estimatedPrice 설정
+        // finalPrice를 환율 계산하여 estimatedPrice 설정
         Integer finalPrice = auctionItem.getFinalPrice();  // bidPrice와 동일
         Integer estimatedPrice = exchangeRateService.calculateEstimatedPrice(auctionItem); // 환율 계산
 
@@ -80,6 +79,10 @@ public class AuctionService {
         if (estimatedPrice != null && estimatedPrice > 0) {
             auctionItem.setCommission(calculateCommissionOrPenalty(estimatedPrice));
             auctionItem.setPenalty(calculateCommissionOrPenalty(estimatedPrice));
+        } else {
+            // 예상 가격이 없다면, commission을 0으로 설정
+            auctionItem.setCommission(0); // 기본값 설정
+            auctionItem.setPenalty(0); // 기본값 설정
         }
 
         // 경매 종료일 계산
@@ -231,7 +234,7 @@ public class AuctionService {
 
         // 상품 등록자와 로그인 사용자가 동일한지 확인
         if (auctionItem.getCreatedBy().equals(loggedInUser)) {
-            throw new RuntimeException("상품 등록자는 입찰에 참여할 수 없습니다.");
+            throw new IllegalArgumentException("상품 등록자는 입찰에 참여할 수 없습니다.");  // 상품 등록자는 입찰 불가
         }
 
         // 현재 입찰 정보를 가져오기 (최신 입찰 기록을 조회)
@@ -243,8 +246,10 @@ public class AuctionService {
             if (bidAmount <= auctionItem.getBidPrice()) {
                 throw new IllegalArgumentException("첫 입찰 금액은 시작 가격보다 커야 합니다.");
             }
+            // 첫 입찰 시 처리: finalPrice 갱신
+            auctionItem.setFinalPrice(bidAmount); // finalPrice를 첫 입찰 금액으로 설정
+            auctionItemRepository.save(auctionItem); // auctionItem DB에 저장
 
-            // 첫 입찰 시 처리
             saveNewBid(auctionItem, loggedInUser, bidAmount, null);  // 첫 입찰이므로 previousBidder는 null
             return getMemberByEmail(loggedInUser).getNickName();  // 첫 입찰자의 닉네임 반환
         }
@@ -279,7 +284,7 @@ public class AuctionService {
         Bidding newBid = new Bidding();
         newBid.setAuctionItem(auctionItem);
         newBid.setCurrentBidder(currentNickname);  // 새로운 입찰자의 닉네임을 현재 입찰자 필드에 설정
-        newBid.setPreviousBidder(previousNickname);  // 기존 입찰자 닉네임을 이전 입찰자 필드에 설정
+        newBid.setPreviousBidder(currentBid.getCurrentBidder());  // 기존 입찰자 닉네임을 이전 입찰자 필드에 설정
         newBid.setBiddingPrice(bidAmount);  // 새로운 입찰 금액
         newBid.setDeposit(bidAmount * 10 / 100);  // 예시로 보증금을 금액의 10%로 설정
 
@@ -335,5 +340,30 @@ public class AuctionService {
         newBid.setDeposit(bidAmount * 10 / 100);  // 보증금을 10%로 설정
 
         biddingRepository.save(newBid);  // 새로운 입찰 기록 저장
+    }
+
+
+    // 최종 입찰자의 닉네임을 가져오는 메서드
+    public String getFinalBidderNickName(Long auctionItemId) {
+        // 경매 아이템 조회
+        AuctionItem auctionItem = auctionItemRepository.findById(auctionItemId)
+                .orElseThrow(() -> new RuntimeException("경매 아이템을 찾을 수 없습니다."));
+
+        // 최신 입찰자 조회 (최신 입찰이 없으면 null)
+        Bidding latestBid = biddingRepository.findTopByAuctionItemOrderByIdDesc(auctionItem);
+
+        if (latestBid != null) {
+            // 입찰자의 닉네임 (currentBidder는 이미 닉네임)
+            String currentBidderNickName = latestBid.getCurrentBidder();
+            log.info("최신 입찰자의 닉네임: " + currentBidderNickName); // 닉네임 확인
+
+            // 입찰자가 있을 경우 닉네임 반환
+            return currentBidderNickName;
+        } else {
+            log.info("최신 입찰자가 없습니다."); // 최신 입찰자가 없는 경우
+        }
+
+        // 입찰자가 없으면 기본값 "입찰자 없음" 반환
+        return "입찰자 없음";
     }
 }

@@ -2,10 +2,12 @@ package com.wywin.service;
 
 import com.wywin.dto.ItemSearchDTO;
 import com.wywin.dto.SellingItemFormDTO;
+import com.wywin.dto.SellingItemImgDTO;
 import com.wywin.entity.SellingItem;
 import com.wywin.entity.SellingItemImg;
 import com.wywin.repository.SellingItemImgRepository;
 import com.wywin.repository.SellingRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,43 +16,94 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class SellingService{
+public class SellingService {
 
-    private final SellingRepository sellingRepository; // 리포지토리 의존성 주입
+    private final SellingRepository sellingRepository;
     private final SellingItemImgService sellingItemImgService;
     private final SellingItemImgRepository sellingItemImgRepository;
 
     public Long saveSellingItem(SellingItemFormDTO sellingItemFormDTO, List<MultipartFile> itemImgFileList) throws Exception {
 
-        // 상품 등록
-        SellingItem sellingItem = sellingItemFormDTO.createItem(); // 등록 폼에서 받은 데이터로 객체 생성
-        sellingRepository.save(sellingItem);                               // DB에 저장
+        SellingItem sellingItem = sellingItemFormDTO.createItem();
+        sellingRepository.save(sellingItem);
 
-        // 이미지 등록
         for (int i = 0; i < itemImgFileList.size(); i++) {
             SellingItemImg sellingItemImg = new SellingItemImg();
             sellingItemImg.setSellingItem(sellingItem);
+            sellingItemImg.setSrepimgYn(i == 0 ? "Y" : "N");
 
-            if (i == 0)
-                sellingItemImg.setSrepimgYn("Y");       // 첫 번째 이미지는 대표 이미지로 설정
-            else
-                sellingItemImg.setSrepimgYn("N");
-
-            sellingItemImgService.saveItemImg(sellingItemImg, itemImgFileList.get(i)); // 상품 이미지 저장
+            sellingItemImgService.saveItemImg(sellingItemImg, itemImgFileList.get(i));
         }
 
-        return sellingItem.getSid();                    // 저장된 상품 ID 반환
+        return sellingItem.getSid();
     }
 
     @Transactional(readOnly = true)
-    public Page<SellingItem> getSellingItemPage(ItemSearchDTO itemSearchDto, Pageable pageable){
+    public Page<SellingItem> getSellingItemPage(ItemSearchDTO itemSearchDto, Pageable pageable) {
         return sellingRepository.getSellingItemPage(itemSearchDto, pageable);
-    } // 페이지 처리되는 아이템 처리용 (상품 조회 조건과 페이지 정보를 파라미터로 받아서 상품 데이터를 조회)
+    }
 
+    @Transactional(readOnly = true)
+    public SellingItemFormDTO getItemDtl(Long itemId) {
+        SellingItem item = sellingRepository.findById(itemId)
+                .orElseThrow(EntityNotFoundException::new);
 
+        List<SellingItemImg> itemImgList = sellingItemImgRepository.findBySellingItem_SidOrderBySidAsc(itemId);
+        List<SellingItemImgDTO> itemImgDtoList = itemImgList.stream()
+                .map(SellingItemImgDTO::of)
+                .collect(Collectors.toList());
+
+        SellingItemFormDTO itemFormDto = SellingItemFormDTO.of(item);
+        itemFormDto.setItemImgDtoList(itemImgDtoList);
+        return itemFormDto;
+    }
+
+    public Long updateItem(SellingItemFormDTO sellingItemFormDTO, List<MultipartFile> itemImgFileList) throws Exception {
+        SellingItem sellingItem = sellingRepository.findById(sellingItemFormDTO.getSid())
+                .orElseThrow(EntityNotFoundException::new);
+
+        sellingItem.updateItem(sellingItemFormDTO);
+
+        List<Long> itemImgIds = sellingItemFormDTO.getItemImgIds();
+
+        for (int i = 0; i < itemImgFileList.size(); i++) {
+            if (i < itemImgIds.size() && itemImgFileList.get(i) != null && !itemImgFileList.get(i).isEmpty()) {
+                sellingItemImgService.updateItemImg(itemImgIds.get(i), itemImgFileList.get(i));
+            }
+        }
+
+        return sellingItemFormDTO.getSid();
+    }
+
+    public SellingItem getSellingItem(Long sellingId) {
+        return sellingRepository.findById(sellingId)
+                .orElseThrow(EntityNotFoundException::new);
+    }
+
+    public SellingItemFormDTO getSellingItemFormDTO(Long sellingId) {
+        SellingItem sellingItem = sellingRepository.findById(sellingId)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
+
+        SellingItemFormDTO sellingItemFormDTO = SellingItemFormDTO.of(sellingItem);
+
+        List<SellingItemImgDTO> itemImgDtos = sellingItem.getSellingImgs().stream()
+                .map(SellingItemImgDTO::of)
+                .collect(Collectors.toList());
+        sellingItemFormDTO.setItemImgDtoList(itemImgDtos);
+
+        return sellingItemFormDTO;
+    }
+
+    @Transactional
+    public void deleteItem(Long sellingId) {
+        SellingItem sellingItem = sellingRepository.findById(sellingId)
+                .orElseThrow(() -> new EntityNotFoundException("삭제할 상품이 존재하지 않습니다."));
+        sellingRepository.delete(sellingItem); // 상품 삭제
+    }
 
 }

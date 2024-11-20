@@ -51,6 +51,12 @@
                 bidButton.disabled = !agreementCheckbox.checked;
             });
 
+            // 서버에서 전달받은 error 메시지 처리 (경고문 띄우기)
+            const errorMessage = "[[${error}]]";
+            if (errorMessage) {
+                alert(errorMessage); // 경고 메시지를 알림으로 띄움
+            }
+
             // 입찰 처리 함수
             function submitBid(event) {
                 const bidAmountInput = document.getElementById('bidAmount');
