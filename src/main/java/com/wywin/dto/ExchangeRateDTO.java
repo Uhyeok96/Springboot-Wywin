@@ -13,9 +13,9 @@ public class ExchangeRateDTO {
 
     private Long id;
 
-    private BigDecimal usdToKrw;
+    private BigDecimal usdToKrw;    // 달러기준 원화환율
 
-    private BigDecimal usdToJpy;
+    private BigDecimal usdToJpy;    // 달러기준 엔화환율
 
     private LocalDateTime regTime;  // 생성 시간
 

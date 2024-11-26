@@ -1,0 +1,134 @@
+/* 콘텐츠 영역 */
+.content-wrapper {
+    margin: 0 auto;      /* 좌우 마진을 자동으로 설정하여 중앙 정렬 */
+    padding: 20px;       /* 여백 */
+    width: 80%;          /* 너비를 80%로 설정 */
+    box-sizing: border-box; /* 패딩을 포함한 크기 계산 */
+}
+
+/* 경매 이력 제목 스타일 */
+h2 {
+    font-size: 20px;        /* 글씨 크기 조정 */
+    margin-bottom: 20px;    /* 제목 아래 간격 추가 */
+}
+
+/* 전체 경매 리스트 스타일 */
+.auction-history {
+    padding: 20px;
+    background-color: #f9f9f9;
+    width: 100%; /* 화면에 꽉 차도록 설정 */
+    box-sizing: border-box; /* padding을 포함한 크기 계산 */
+}
+
+/* 경매 아이템 리스트 */
+.auction-item-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* 경매 아이템 */
+.auction-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* 화면에 꽉 차도록 설정 */
+}
+
+/* 경매 아이템의 내부 컨테이너 */
+.auction-item-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 상품명 및 상태 영역 */
+.auction-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    margin-bottom: 10px;
+    align-items: center; /* 세로 정렬 */
+}
+
+/* 동그라미 스타일 */
+.status-circle {
+    display: inline-block;
+    width: 10px;         /* 동그라미 크기 */
+    height: 10px;
+    border-radius: 50%;  /* 원 모양 */
+    margin-right: 8px;   /* 동그라미와 텍스트 사이 간격 */
+}
+
+/* ONBID 상태일 때 초록색 동그라미 */
+.green-circle {
+    background-color: green;
+}
+
+/* OFF 상태일 때 빨간색 동그라미 */
+.red-circle {
+    background-color: red;
+}
+
+.item-name {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.item-status {
+    color: #888;
+}
+
+/* 가격 및 회원 입찰 금액 */
+.auction-item-body {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.left, .right {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 가격 숫자와 통화 단위를 같은 줄에 배치 */
+.price, .currency-type {
+    display: inline;
+}
+
+.price {
+    color: #00bcd4;  /* 하늘색 */
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+/* 중간선 */
+.divider {
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+    margin-bottom: 10px; /* 중간선 아래 여백 추가 */
+}
+
+/* 최종 결제 버튼 */
+.final-payment-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* 버튼을 가로로 꽉 채움 */
+}
+
+.final-payment-btn:hover {
+    background-color: #45a049;
+}
+
+/* 메시지 영역 스타일 */
+.no-items-message p {
+    color: #999;
+    text-align: center;
+}

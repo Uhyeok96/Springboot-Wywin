@@ -15,13 +15,15 @@ public class BiddingDTO {
     private Long auctionItemId;  // 경매 아이템 ID (AuctionItem 엔티티와 관계)
 
     @NotBlank(message = "입찰자 이메일은 필수입니다.")
-    private String currentBidder;  // 현재 입찰자 이메일
+    private String currentBidder;  // 현재 입찰자 (경매 종료시 최종 낙찰자)
 
-    private String previousBidder;  // 이전 입찰자 이메일 (첫 입찰 시 null일 수 있음)
+    private String previousBidder;  // 이전 입찰자 (첫 입찰 시 null일 수 있음)
 
     @NotNull(message = "보증금은 필수입니다.")
     private Integer deposit;  // 보증금 (입찰 시 지불한 보증금)
 
     @NotNull(message = "입찰 금액은 필수입니다.")
     private Integer biddingPrice;  // 입찰 금액 (입찰 시 기록되는 금액)
+
+    private Integer previousDepositInKRW;  // 이전 입찰자의 환율 적용된 원화 보증금 (환불용)
 }

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<!-- 사용자 스크립트 추가 -->
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        // 필요에 따라 JavaScript 추가 가능
+    </script>
+</th:block>
+
+<!-- CSS 파일 링크 추가 -->
+<th:block layout:fragment="css">
+    <link rel="stylesheet" th:href="@{/css/auctionItemHistory.css}" />
+</th:block>
+
+<div layout:fragment="content" class="content-wrapper">
+
+    <!-- 경매 이력 리스트 출력 -->
+    <div class="auction-history">
+        <!-- 로그인한 사용자의 경매 이력 제목 -->
+        <h2 th:text="${nickname != null ? nickname : '회원님'} + '님의 경매이력입니다.'"></h2>
+
+        <!-- 입찰한 경매 아이템이 없을 경우 메시지 출력 -->
+        <div th:if="${auctionItemDTOs == null or auctionItemDTOs.isEmpty()}" class="no-items-message">
+            <p>입찰한 경매 아이템이 없습니다.</p>
+        </div>
+
+        <ul class="auction-item-list">
+            <!-- 각 경매 아이템에 대한 리스트 출력 -->
+            <li th:each="item, iterStat : ${auctionItemDTOs}" class="auction-item">
+                <div class="auction-item-container">
+                    <div class="auction-item-content">
+                        <div class="auction-item-header">
+                            <span class="item-name" th:text="${item.itemName}">상품명</span>
+                            <span class="item-status">
+                                 <span th:switch="${item.itemStatus != null ? item.itemStatus.toString() : ''}">
+                                     <span th:case="'ONBID'">
+                                         <span class="status-circle green-circle"></span> 상태: 경매 진행 중입니다.
+                                     </span>
+                                     <span th:case="'OFF'">
+                                         <span class="status-circle red-circle"></span> 상태: 경매가 마감되었습니다.
+                                     </span>
+                                 </span>
+                            </span>
+                        </div>
+
+                        <div class="auction-item-body">
+                            <div class="left">
+                                <span><strong>현재 가격:</strong> <span class="price" th:text="${item.finalPrice}"></span>
+                                <span class="currency-type" th:switch="${#strings.trim(item.currencyType)}">
+                                    <span th:case="'KRW'">원(KRW)</span>
+                                    <span th:case="'JPY'">엔(JPY)</span>
+                                    <span th:case="'USD'">달러(USD)</span>
+                                </span></span>
+                            </div>
+                            <div class="right">
+                                <span><strong>회원님의 입찰 금액:</strong>
+                                <span th:text="${item.userLastBiddingDTO != null ? item.userLastBiddingDTO.biddingPrice : '입찰 없음'}"></span>
+                                <span class="currency-type" th:switch="${#strings.trim(item.currencyType)}">
+                                    <span th:case="'KRW'">원(KRW)</span>
+                                    <span th:case="'JPY'">엔(JPY)</span>
+                                    <span th:case="'USD'">달러(USD)</span>
+                                </span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <p><strong>상태:</strong>
+                        <!-- 경매가 진행 중일 경우 -->
+                        <span th:if="${item.itemStatus != null and item.itemStatus.toString().equals('ONBID')}">
+                            <!--경매 진행 중입니다.-->
+                            <!-- 로그인한 사용자가 최종 입찰자인 경우 -->
+                            <span th:if="${item.lastBiddingDTO != null and item.lastBiddingDTO.currentBidder == nickname}">
+                                회원님의 입찰이 현재 최고가입니다.
+                            </span>
+                            <!-- 로그인한 사용자가 최종 입찰자가 아닌 경우 -->
+                            <span th:if="${item.lastBiddingDTO != null and item.lastBiddingDTO.currentBidder != nickname}">
+                                회원님의 입찰이 밀려났습니다. 보증금을 환급 받았습니다. 다시 입찰을 시도해주세요.
+                            </span>
+                        </span>
+                        <!-- 경매가 종료된 경우 -->
+                        <span th:if="${item.itemStatus != null and item.itemStatus.toString().equals('OFF')}">
+                            <!--경매가 마감되었습니다.-->
+                            <!-- 로그인한 사용자가 최종 낙찰자인 경우 -->
+                            <span th:if="${item.lastBiddingDTO != null and item.lastBiddingDTO.currentBidder == nickname}">
+                                낙찰되셨습니다. 축하드립니다!
+                            </span>
+                            <!-- 로그인한 사용자가 최종 낙찰자가 아닌 경우 -->
+                            <span th:if="${item.lastBiddingDTO != null and item.lastBiddingDTO.currentBidder != nickname}">
+                                낙찰에 성공하지 못했습니다.
+                            </span>
+                        </span>
+                    </p>
+
+                    <!-- 잔금 결제 버튼 (로그인한 사용자가 낙찰자인 경우에만 표시) -->
+                    <button th:if="${item.lastBiddingDTO != null and item.lastBiddingDTO.currentBidder == nickname and item.itemStatus != null and item.itemStatus.toString().equals('OFF')}" class="final-payment-btn">
+                        잔금 결제하기
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</div> <!-- content fragment 닫힘 -->
+
+</html>

@@ -35,11 +35,24 @@
             });
 
             // 서버에서 전달받은 finalPrice 값 처리
-            let finalPrice = parseInt("[[${auctionItem.finalPrice}]]");
-            const bidPrice = parseInt("[[${auctionItem.bidPrice}]]");
+            let finalPrice = parseInt("[[${auctionItem.finalPrice}]]"); // 현재 가격
+            const bidPrice = parseInt("[[${auctionItem.bidPrice}]]");   // 시작 가격
+            const currencyType = "[[${auctionItem.currencyType}]]";   // 통화 유형
+
+            // 숫자에 쉼표를 추가하는 함수
+            function formatNumber(number) {
+                return number.toLocaleString(); // 예: 5000000 -> 5,000,000
+            }
 
             // 현재 가격 표시 업데이트
-            document.getElementById('currentPrice').textContent = finalPrice;
+            document.getElementById('currentPrice').textContent = formatNumber(finalPrice);
+
+            // 개시 가격 표시 업데이트
+            document.getElementById('startPrice').textContent = formatNumber(bidPrice);
+
+            // 예상 가격 표시 업데이트
+            const estimatedPrice = parseInt("[[${auctionItem.estimatedPrice}]]");
+            document.getElementById('estimatedPrice').textContent = formatNumber(estimatedPrice);
 
             // 입찰 동의 체크박스 이벤트 처리
             const agreementCheckbox = document.getElementById('agreement');
@@ -62,11 +75,35 @@
                 const bidAmountInput = document.getElementById('bidAmount');
                 const bidAmount = parseInt(bidAmountInput.value);
 
-                // 입찰 금액이 비어있거나 현재 가격보다 적은 경우 경고창
-                if (!bidAmount || bidAmount <= finalPrice) {
-                    alert("입찰 금액은 현재 가격보다 커야 하며, 빈 값을 입력할 수 없습니다.");
+                // 입찰 금액 유효성 검사
+                if (!bidAmount) {
+                    alert("입찰 금액을 입력해주세요.");
                     event.preventDefault(); // 폼 제출 방지
                     return;
+                }
+
+                // 통화 유형에 따른 입찰 조건 설정
+                if (currencyType === 'JPY') {
+                    // 일본 엔화: 최소 10 이상 증가 && 일의 자리수는 항상 0
+                    if ((bidAmount % 10 !== 0) || (bidAmount < finalPrice + 10)) {
+                        alert("입찰 금액은 기존 가격보다 최소 10엔 이상이어야 하며, 일의 자리수는 입력이 불가합니다.");
+                        event.preventDefault(); // 폼 제출 방지
+                        return;
+                    }
+                } else if (currencyType === 'KRW') {
+                    // 한국 원화: 최소 1000 이상 증가 && 일의 자리와 십의 자리는 항상 0
+                    if ((bidAmount % 100 !== 0) || (bidAmount < finalPrice + 1000)) {
+                        alert("입찰 금액은 기존 가격보다 최소 1000원 이상이어야 하며, 일의 자리와 십의 자리는 입력이 불가합니다.");
+                        event.preventDefault(); // 폼 제출 방지
+                        return;
+                    }
+                } else {
+                    // 미국 달러(USD): 단순히 기존 가격보다 크기만 하면 됨
+                    if (bidAmount <= finalPrice) {
+                        alert("입찰 금액은 현재 가격보다 커야 합니다.");
+                        event.preventDefault(); // 폼 제출 방지
+                        return;
+                    }
                 }
 
                 // 입찰 동의 체크박스 검사
@@ -76,28 +113,40 @@
                     return;
                 }
 
-                // 숨겨진 입력 필드가 없으면 추가
-                let hiddenBidAmount = document.getElementById('hiddenBidAmount');
-                if (!hiddenBidAmount) {
-                    // hiddenBidAmount를 추가
-                    hiddenBidAmount = document.createElement('input');
-                    hiddenBidAmount.type = 'hidden';
-                    hiddenBidAmount.name = 'bidAmount'; // 서버로 전달할 name
-                    hiddenBidAmount.id = 'hiddenBidAmount';
-                    document.getElementById('bidForm').appendChild(hiddenBidAmount);
+                // 보증금 계산
+                const depositAmount = Math.floor(estimatedPrice * 0.1);  // 보증금은 예상 가격의 10%
+                const confirmMessage = `보증금이 선결제됩니다. 더 큰 입찰이 들어오게 될 시 선결제한 보증금은 자동환불됩니다. 정말 입찰하시겠습니까? (결제 될 보증금: ${formatNumber(depositAmount)}원)`;
+
+                // 확인 창 띄우기
+                if (confirm(confirmMessage)) {
+                    // 확인을 눌렀을 때 보증금 결제 및 입찰 진행
+                    alert("보증금 결제 후 입찰이 진행됩니다.");
+
+                    // 실제 입찰 처리
+                    let hiddenBidAmount = document.getElementById('hiddenBidAmount');
+                    if (!hiddenBidAmount) {
+                        hiddenBidAmount = document.createElement('input');
+                        hiddenBidAmount.type = 'hidden';
+                        hiddenBidAmount.name = 'bidAmount'; // 서버로 전달할 name
+                        hiddenBidAmount.id = 'hiddenBidAmount';
+                        document.getElementById('bidForm').appendChild(hiddenBidAmount);
+                    }
+
+                    document.getElementById('hiddenBidAmount').value = bidAmount;
+
+                    // 입찰 금액 업데이트 (finalPrice를 변경)
+                    finalPrice = bidAmount;
+
+                    // 현재 가격 표시 업데이트
+                    document.getElementById('currentPrice').textContent = finalPrice + " 원";
+
+                    // 실제 입찰 요청 폼 제출
+                    document.getElementById('bidForm').submit();
+                } else {
+                    // 취소 시 처리
+                    alert("입찰이 취소되었습니다.");
+                    event.preventDefault(); // 폼 제출 방지
                 }
-
-                // 서버로 실제 입찰 요청을 전송하기 위해 숨겨진 입력 필드에 bidAmount를 설정
-                document.getElementById('hiddenBidAmount').value = bidAmount;
-
-                // 입찰 금액 업데이트 (finalPrice를 변경)
-                finalPrice = bidAmount;
-
-                // 현재 가격 표시 업데이트
-                document.getElementById('currentPrice').textContent = finalPrice + " 원";
-
-                // 실제 입찰 요청 폼 제출
-                document.getElementById('bidForm').submit();
             }
 
             // 입찰하기 버튼 클릭 시 submitBid 호출
@@ -126,6 +175,14 @@
                     largeBox.style.backgroundColor = 'black';
                     smallBox.style.color = 'white';
                     largeBox.style.color = 'white';
+
+                    smallBox.style.display = 'flex';
+                    smallBox.style.alignItems = 'center';
+                    smallBox.style.justifyContent = 'center';
+
+                    largeBox.style.display = 'flex';
+                    largeBox.style.alignItems = 'center';
+                    largeBox.style.justifyContent = 'center';
 
                     smallBox.innerHTML = '<p style="color:white;">경매 종료</p>';
                     largeBox.innerHTML = '<p style="color:white;">경매 종료</p>';
@@ -225,7 +282,7 @@
                 </div>
                 <div class="item-start-price">
                     <span>개시 가격:</span>
-                    <span class="price" th:text="${auctionItem.bidPrice}"></span>
+                    <span class="price" id="startPrice" th:text="${auctionItem.bidPrice}"></span>
                     <span th:switch="${#strings.trim(auctionItem.currencyType)}">
                         <span th:case="'KRW'">원(KRW)</span>
                         <span th:case="'JPY'">엔(JPY)</span>
@@ -245,7 +302,7 @@
                 </div>
                 <div class="item-estimated">
                     <span>예상 견적가:</span>
-                    <span th:text="${auctionItem.estimatedPrice}"></span> 원
+                    <span id="estimatedPrice" th:text="${auctionItem.estimatedPrice}"></span> 원
                 </div>
             </div>
 
@@ -262,7 +319,7 @@
                         <label for="memo">현재 최종입찰자:</label>
                         <input type="text" id="memo" name="memo"
                                th:value="${finalBidder != null ? finalBidder : '입찰자 없음'}"
-                               readonly />
+                               readonly /> 님
                     </div>
                 </div>
 

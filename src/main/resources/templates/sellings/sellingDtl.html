@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+ㅂㅇ<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
 
-<head>
- <!-- <meta name="_csrf" th:content="${_csrf.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>-->
-</head>
+<!--<head>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>-->
 
 <th:block layout:fragment="script">
   <script th:inline="javascript">
@@ -25,8 +25,8 @@
     }
 
     function order(){
-      /*var token = $("meta[name='_csrf']").attr("content");*/
-      /*var header = $("meta[name='_csrf_header']").attr("content");*/
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
       var url = "/order";
       var quantity = parseInt($("#count").val());  // 수량 가져오기
 
@@ -47,19 +47,21 @@
         type     : "POST",
         contentType : "application/json",
         data     : param,
-        beforeSend : function(xhr){
-          xhr.setRequestHeader(header/*, token*/);
-        },
+        /*beforeSend : function(xhr){
+          xhr.setRequestHeader(header, token);
+        },*/
         dataType : "json",
         cache   : false,
         success  : function(result, status){
           alert("주문이 완료 되었습니다.");
+          console.log("성공:", response);
           location.href='/';
         },
         error : function(jqXHR, status, error){
           if(jqXHR.status == '401'){
             alert('로그인 후 이용해주세요');
             location.href='/members/login';
+            console.error("AJAX 오류:", status, error);
           } else{
             alert(jqXHR.responseText);
           }
@@ -68,8 +70,8 @@
     }
 
     function addCart(){
-      /*var token = $("meta[name='_csrf']").attr("content");
-      var header = $("meta[name='_csrf_header']").attr("content");*/
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
       var url = "/cart";
       var paramData = {
         itemId: $("#itemId").val(),
@@ -82,9 +84,9 @@
         type     : "POST",
         contentType : "application/json",
         data     : param,
-        beforeSend : function(xhr){
-          xhr.setRequestHeader(header/*, token*/);  // CSRF 토큰 헤더에 추가
-        },
+        /*beforeSend : function(xhr){
+          xhr.setRequestHeader(header, token);  // CSRF 토큰 헤더에 추가
+        },*/
         dataType : "json",
         cache   : false,
         success  : function(result, status){
@@ -108,17 +110,17 @@
     }
 
     function deleteItem() {
-      /*var token = $("meta[name='_csrf']").attr("content");
-      var header = $("meta[name='_csrf_header']").attr("content");*/
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
       var sellingId = [[${item.sid}]];  // 삭제할 상품의 sid 값 가져오기
 
       if (confirm("정말로 이 상품을 삭제하시겠습니까?")) {
         $.ajax({
           url: '/sellings/delete/' + sellingId,  // 삭제할 상품의 URL로 AJAX 요청
           type: 'POST',
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader(header/*, token*/);  // CSRF 토큰 헤더에 추가
-          },
+          /* beforeSend: function(xhr) {
+             xhr.setRequestHeader(header, token);  // CSRF 토큰 헤더에 추가
+           },*/
           success: function(response) {
             window.location.href = '/sellings/sellingList';  // 삭제 후 목록으로 리디렉션
           },
@@ -199,7 +201,7 @@
       </div>
       <div th:if="${item.itemStatus.name() == 'SELL'}" class="text-right">
         <button type="button" class="btn btn-light border border-primary btn-lg" onclick="addCart()">장바구니 담기</button>
-        <button type="button" class="btn btn-primary btn-lg" onclick="order()">주문하기</button>
+        <button type="button" class="btn btn-primary btn-lg" id="orderButton" onclick="order()">주문하기</button>
       </div>
       <div th:if="${item.itemStatus.name() != 'SELL'}" class="text-right">
         <button type="button" class="btn btn-danger btn-lg">품절</button>

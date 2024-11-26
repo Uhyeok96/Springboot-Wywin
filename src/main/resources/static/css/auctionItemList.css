@@ -70,8 +70,17 @@
     margin: 10px 0;
 }
 
+/* 시작금액 */
 .card-bid-price {
-    font-size: 0.95em;  /* 기존보다 조금 줄임 */
+    font-size: 0.8em;  /* 기존보다 조금 줄임 */
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+/* 예상견적가 */
+.card-estimated-price {
+    font-size: 0.8em;  /* 기존보다 조금 줄임 */
     font-weight: bold;
     color: #007bff;
 }

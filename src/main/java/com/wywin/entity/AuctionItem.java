@@ -63,4 +63,7 @@ public class AuctionItem extends BaseEntity{
     @Column(nullable = false)
     private Integer estimatedPrice = 0; // 예상 견적가 (기본값은 0)
 
+    @OneToMany(mappedBy = "auctionItem", fetch = FetchType.LAZY)
+    private List<Bidding> biddings; // 해당 경매 아이템에 대한 입찰 목록
+
 }

@@ -52,5 +52,8 @@ public class MemberDTO {
             message = "닉네임은 특수문자를 제외한 2~10자리여야 합니다.")
     private String nickName;
 
+    // 마일리지 계좌를 포함하는 필드 추가
+    private MileageAccountDTO mileageAccount;
+
 
 }

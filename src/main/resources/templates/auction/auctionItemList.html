@@ -6,7 +6,40 @@
 <!-- 사용자 스크립트 추가 -->
 <th:block layout:fragment="script">
   <script th:inline="javascript">
-    // 추가적인 스크립트가 필요할 경우 여기에 작성
+    // 체크박스를 클릭할 때마다 폼 제출
+    function submitForm() {
+      // 폼 제출 전 체크된 체크박스 값을 배열로 처리
+      var checkboxes = document.getElementsByName('currencyTypes');
+      var selectedValues = [];
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+          selectedValues.push(checkboxes[i].value);
+        }
+      }
+
+      // 선택된 값들을 폼에 추가
+      var currencyField = document.getElementById('currencyTypes');
+      currencyField.value = selectedValues.join(',');  // 선택된 값들을 쉼표로 구분해서 하나의 문자열로
+
+      // 폼 제출
+      document.getElementById('filterForm').submit();
+    }
+
+    // 숫자에 쉼표를 추가하는 함수
+    function formatNumber(num) {
+      if (isNaN(num)) return num; // 숫자가 아니면 그대로 반환
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // 페이지 로딩 시 숫자 포맷팅 적용
+    window.onload = function() {
+      var numberElements = document.querySelectorAll('.formatted-number');
+      numberElements.forEach(function(element) {
+        var numberText = element.textContent.trim();
+        var formattedNumber = formatNumber(numberText);
+        element.textContent = formattedNumber;
+      });
+    };
   </script>
 </th:block>
 
@@ -22,17 +55,45 @@
     <a class="new-item-button" th:href="@{/auction/item/new}">상품 등록하기</a>
   </div>
 
+  <div class="filter-bar">
+    <!-- 필터링 폼 -->
+    <form id="filterForm" th:action="@{/auction/items}" method="get">
+      <label>
+        <input type="checkbox" name="currencyTypes" value="KRW"
+               th:checked="${currencyTypes != null && currencyTypes.contains('KRW')}" onchange="submitForm()" /> 원화
+      </label>
+      <label>
+        <input type="checkbox" name="currencyTypes" value="JPY"
+               th:checked="${currencyTypes != null && currencyTypes.contains('JPY')}" onchange="submitForm()" /> 엔화
+      </label>
+      <label>
+        <input type="checkbox" name="currencyTypes" value="USD"
+               th:checked="${currencyTypes != null && currencyTypes.contains('USD')}" onchange="submitForm()" /> 달러
+      </label>
+
+      <!-- 숨겨진 필드로 현재 정렬 방식과 뷰 유지 -->
+      <input type="hidden" name="sort" th:value="${sort}" />
+      <input type="hidden" name="view" th:value="${view}" />
+
+      <!-- 통화 필터링을 위한 숨겨진 필드 -->
+      <input type="hidden" id="currencyTypes" name="currencyTypes" th:value="${currencyTypes != null ? currencyTypes : ''}" />
+    </form>
+
+  </div>
+
   <!-- 리스트 출력 방식 -->
   <div class="sort-bar">
     <div>
-      <a class="sort-button" th:classappend="${param.sort == 'popular'} ? 'selected' : ''" th:href="@{/auction/items(sort='popular', view=${view})}">인기상품순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'new'} ? 'selected' : ''" th:href="@{/auction/items(sort='new', view=${view})}">신상품순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'price_desc'} ? 'selected' : ''" th:href="@{/auction/items(sort='price_desc', view=${view})}">가격높은순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'price_asc'} ? 'selected' : ''" th:href="@{/auction/items(sort='price_asc', view=${view})}">가격낮은순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'bids_desc'} ? 'selected' : ''" th:href="@{/auction/items(sort='bids_desc', view=${view})}">입찰많은순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'bids_asc'} ? 'selected' : ''" th:href="@{/auction/items(sort='bids_asc', view=${view})}">입찰적은순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'end_soon'} ? 'selected' : ''" th:href="@{/auction/items(sort='end_soon', view=${view})}">종료빠른순</a>
-      <a class="sort-button" th:classappend="${param.sort == 'end_late'} ? 'selected' : ''" th:href="@{/auction/items(sort='end_late', view=${view})}">종료느린순</a>
+      <a class="sort-button" th:classappend="${param.sort == 'new'} ? 'selected' : ''"
+         th:href="@{/auction/items(sort='new', view=${view}, currencyTypes=${currencyTypes})}">신상품순</a>
+      <a class="sort-button" th:classappend="${param.sort == 'price_desc'} ? 'selected' : ''"
+         th:href="@{/auction/items(sort='price_desc', view=${view}, currencyTypes=${currencyTypes})}">가격높은순</a>
+      <a class="sort-button" th:classappend="${param.sort == 'price_asc'} ? 'selected' : ''"
+         th:href="@{/auction/items(sort='price_asc', view=${view}, currencyTypes=${currencyTypes})}">가격낮은순</a>
+      <a class="sort-button" th:classappend="${param.sort == 'bids_desc'} ? 'selected' : ''"
+         th:href="@{/auction/items(sort='bids_desc', view=${view}, currencyTypes=${currencyTypes})}">입찰많은순</a>
+      <a class="sort-button" th:classappend="${param.sort == 'bids_asc'} ? 'selected' : ''"
+         th:href="@{/auction/items(sort='bids_asc', view=${view}, currencyTypes=${currencyTypes})}">입찰적은순</a>
     </div>
 
     <!-- 보기 형식 버튼들 -->
@@ -51,56 +112,67 @@
     <p>아직 등록된 게시물이 없습니다.</p>
   </div>
 
-  <!-- 갤러리 형식 출력 -->
-  <div th:if="${view == 'gallery'}" class="card-container">
-    <div class="card" th:each="item : ${auctionItems.content}">
-      <a th:href="@{/auction/item/{id}(id=${item.id})}">
-        <div>
-          <img th:if="${item.auctionImgs.size() > 0}"
-               th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
-               alt="대표 이미지" />
-        </div>
-        <div class="card-title" th:text="${item.itemName}"></div>
-        <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
-        <div class="card-bid-price">
-          시작 금액:
-          <span th:text="${item.bidPrice}"></span>
-          <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
-            <span th:case="'KRW'">₩(원)</span>
-            <span th:case="'JPY'">¥(엔)</span>
-            <span th:case="'USD'">$(달러)</span>
-            <span th:case="*"> </span> <!-- 기본 처리되지 않은 경우 공백 처리 -->
-          </span>
-        </div>
-      </a>
-    </div>
-  </div>
-
-  <!-- 리스트 형식 출력 -->
-  <div th:if="${view == 'list'}" class="list-container">
-    <ul>
-      <li th:each="item : ${auctionItems.content}" class="list-item">
-        <a th:href="@{/auction/item/{id}(id=${item.id})}" style="display: flex; align-items: center; width: 100%;">
-          <img th:if="${item.auctionImgs.size() > 0}"
-               th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
-               alt="대표 이미지" />
-          <div class="item-details" style="flex-grow: 1;">
-            <div class="card-title" th:text="${item.itemName}"></div> <!-- 제목 아래 줄이 그어져야 함 -->
-            <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
-            <div class="card-bid-price">
-              시작 금액:
-              <span th:text="${item.bidPrice}"></span>
-              <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
-                <span th:case="'KRW'">₩(원)</span>
-                <span th:case="'JPY'">¥(엔)</span>
-                <span th:case="'USD'">$(달러)</span>
-                <span th:case="*"> </span>
-              </span>
-            </div>
+  <!-- 상품 리스트 출력 부분 (동적 업데이트 될 부분) -->
+  <div id="auctionItemsList">
+    <!-- 갤러리 형식 출력 -->
+    <div th:if="${view == 'gallery'}" class="card-container">
+      <div class="card" th:each="item : ${auctionItems.content}">
+        <a th:href="@{/auction/item/{id}(id=${item.id})}">
+          <div>
+            <img th:if="${item.auctionImgs.size() > 0}"
+                 th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
+                 alt="대표 이미지" />
+          </div>
+          <div class="card-title" th:text="${item.itemName}"></div>
+          <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
+          <div class="card-bid-price">
+            시작 금액:
+            <span class="formatted-number" th:text="${item.bidPrice != null ? item.bidPrice : 0}"></span>
+            <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
+              <span th:case="'KRW'">₩(원)</span>
+              <span th:case="'JPY'">¥(엔)</span>
+              <span th:case="'USD'">$(달러)</span>
+              <span th:case="*"> </span> <!-- 기본 처리되지 않은 경우 공백 처리 -->
+            </span>
+          </div>
+          <div class="card-estimated-price">
+            예상 견적가:
+            <span class="formatted-number" th:text="${item.estimatedPrice != null ? item.estimatedPrice : 0}"></span> ₩(원)
           </div>
         </a>
-      </li>
-    </ul>
+      </div>
+    </div>
+
+    <!-- 리스트 형식 출력 -->
+    <div th:if="${view == 'list'}" class="list-container">
+      <ul>
+        <li th:each="item : ${auctionItems.content}" class="list-item">
+          <a th:href="@{/auction/item/{id}(id=${item.id})}" style="display: flex; align-items: center; width: 100%;">
+            <img th:if="${item.auctionImgs.size() > 0}"
+                 th:src="@{${item.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}"
+                 alt="대표 이미지" />
+            <div class="item-details" style="flex-grow: 1;">
+              <div class="card-title" th:text="${item.itemName}"></div> <!-- 제목 아래 줄이 그어져야 함 -->
+              <div class="card-short-detail" th:text="${item.itemShortDetail}"></div>
+              <div class="card-bid-price">
+                시작 금액:
+                <span class="formatted-number" th:text="${item.bidPrice != null ? item.bidPrice : 0}"></span>
+                <span th:switch="${item.currencyType != null ? item.currencyType.toString() : 'KRW'}">
+                  <span th:case="'KRW'">₩(원)</span>
+                  <span th:case="'JPY'">¥(엔)</span>
+                  <span th:case="'USD'">$(달러)</span>
+                  <span th:case="*"> </span>
+                </span>
+              </div>
+              <div class="card-estimated-price">
+                예상 견적가:
+                <span class="formatted-number" th:text="${item.estimatedPrice != null ? item.estimatedPrice : 0}"></span>₩(원)
+              </div>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <!-- 페이징 처리 -->

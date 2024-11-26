@@ -46,9 +46,9 @@ public class AuctionItemDTO {
 
     private LocalDateTime auctionEndDate;   // 경매 종료 일시
 
-    private LocalDateTime regTime;
+    private LocalDateTime regTime;  // 상품 등록시간
 
-    private LocalDateTime updateTime;
+    private LocalDateTime updateTime;   // 상품 수정시간
 
     private List<AuctionImgDTO> auctionImgs; // 이미지 리스트
 
@@ -64,4 +64,10 @@ public class AuctionItemDTO {
 
     // 예상 견적가 필드 추가
     private Integer estimatedPrice = 0; // 예상 견적가
+
+    private Integer biddingCount; // 입찰 수
+
+    // 추가된 필드: 마지막 입찰 정보
+    private BiddingDTO lastBiddingDTO; // 최신 입찰 정보
+    private BiddingDTO userLastBiddingDTO; // 해당 회원의 마지막 입찰 정보
 }

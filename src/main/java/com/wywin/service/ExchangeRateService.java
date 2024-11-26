@@ -35,7 +35,7 @@ public class ExchangeRateService {
     private String apiUrl;
 
     // 매일 정해진 시간에 환율 정보를 api를 통해 받아와 데이터베이스에 저장
-    @Scheduled(cron = "0 15 11 * * *")
+    @Scheduled(cron = "0 57 19 * * *")
     @Transactional  // 트랜잭션을 적용하여 DB에 저장이 제대로 이루어지도록 보장
     public void updateExchangeRatesFromApi() {
         System.out.println("Scheduled task started at " + LocalDateTime.now());
@@ -168,6 +168,21 @@ public class ExchangeRateService {
         return finalPrice;
     }
 
+    // 보증금(엔화와 달러일 때) 원화로 계산
+    public Integer convertToKRW(Integer amount, CurrencyType currencyType, ExchangeRateDTO exchangeRateDTO) {
+        switch (currencyType) {
+            case USD:
+                return new BigDecimal(amount).multiply(exchangeRateDTO.getUsdToKrw())
+                        .setScale(0, RoundingMode.CEILING).intValue();
+            case JPY:
+                return new BigDecimal(amount).multiply(exchangeRateDTO.getUsdToKrw())
+                        .divide(exchangeRateDTO.getUsdToJpy(), 2, RoundingMode.HALF_UP)
+                        .setScale(0, RoundingMode.CEILING).intValue();
+            case KRW:
+            default:
+                return amount; // 원화는 변환 불필요
+        }
+    }
 
 
 

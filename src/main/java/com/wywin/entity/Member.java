@@ -9,6 +9,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "member")
 @Getter
@@ -44,6 +46,9 @@ public class Member extends BaseEntity /*implements UserDetails*/ {
 
     private boolean enabled=false; // 계정 활성화 여부
 
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    private MileageAccount mileageAccount;  // 사용자와 연관된 마일리지 계좌
+
     public static Member createMember(MemberDTO memberDTO, PasswordEncoder passwordEncoder){
         /*Member entity를 생성하는 메소드. Member entity에 회원을 생성하는 메소드를 만들어서 관리를 한다면 코드가 변경되더라도 한 군데만 수정하면 된다.*/
 
@@ -58,8 +63,20 @@ public class Member extends BaseEntity /*implements UserDetails*/ {
         member.setPassword(password); /* encoding된 비밀번호를 db에 저장*/
         //member.setRole(Role.USER);/* user권한 부여*/
         member.setRole(Role.ADMIN);/* ADMIN권한 부여*/
+
+        // 회원 생성 시 빈 마일리지 계좌 생성
+        MileageAccount mileageAccount = new MileageAccount();
+        mileageAccount.setAccountNumber(generateAccountNumber()); // 계좌 번호 생성 로직
+        mileageAccount.setMileage(0); // 초기 마일리지
+        mileageAccount.setMember(member); // 계좌와 회원 연결
+        member.setMileageAccount(mileageAccount); // 회원과 계좌 연결
+
         return member;
     }   // 회원 생성용 메서드 (dto와 암호화를 받아 Member 객체 리턴)
+
+    private static String generateAccountNumber() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+    }
 
     public void updateMemberNickName(String nickName) {
         this.nickName = nickName;

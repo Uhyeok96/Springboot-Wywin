@@ -3,10 +3,6 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
 
-<head>
-  <meta name="_csrf" th:content="${_csrf.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-</head>
 
 <!-- 사용자 스크립트 추가 -->
 <th:block layout:fragment="script">
@@ -52,18 +48,18 @@
 
     // 상품 수량 변경시 장바구니에 담긴 상품 수량 업데이트
     function updateCartItemCount(cartItemId, count){
-      var token = $("meta[name='_csrf']").attr("content");
-      var header = $("meta[name='_csrf_header']").attr("content");
+      /* var token = $("meta[name='_csrf']").attr("content");
+       var header = $("meta[name='_csrf_header']").attr("content");*/
 
       var url = "/cartItem/" + cartItemId+"?count=" + count;
 
       $.ajax({
         url      : url,
         type     : "PATCH",       // 부분 업데이트용
-        beforeSend : function(xhr){
-          /* 데이터를 전송하기 전에 헤더에 csrf값을 설정 */
+        /*beforeSend : function(xhr){
+          /!* 데이터를 전송하기 전에 헤더에 csrf값을 설정 *!/
           xhr.setRequestHeader(header, token);
-        },
+        },*/
         dataType : "json",
         cache   : false,
         success  : function(result, status){
@@ -85,18 +81,18 @@
     // x 버튼 클릭시 장바구니에 담긴 상품 삭제 357 추가
     function deleteCartItem(obj){
       var cartItemId = obj.dataset.id;
-      var token = $("meta[name='_csrf']").attr("content");
-      var header = $("meta[name='_csrf_header']").attr("content");
+      /* var token = $("meta[name='_csrf']").attr("content");
+       var header = $("meta[name='_csrf_header']").attr("content");*/
 
       var url = "/cartItem/" + cartItemId;
 
       $.ajax({
         url      : url,
         type     : "DELETE",  // delete 메서드
-        beforeSend : function(xhr){
-          /* 데이터를 전송하기 전에 헤더에 csrf값을 설정 */
+        /*beforeSend : function(xhr){
+          /!* 데이터를 전송하기 전에 헤더에 csrf값을 설정 *!/
           xhr.setRequestHeader(header, token);
-        },
+        },*/
         dataType : "json",
         cache   : false,
         success  : function(result, status){
@@ -115,10 +111,10 @@
       });
     }
 
-    // 장바구니 상품 주문하기 363 추가
+
     function orders(){
-      var token = $("meta[name='_csrf']").attr("content");
-      var header = $("meta[name='_csrf_header']").attr("content");
+      /*var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");*/
 
       var url = "/cart/orders";
 
@@ -141,10 +137,10 @@
         type     : "POST",
         contentType : "application/json",
         data     : param,
-        beforeSend : function(xhr){
-          /* 데이터를 전송하기 전에 헤더에 csrf값을 설정 */
+        /*beforeSend : function(xhr){
+          /!* 데이터를 전송하기 전에 헤더에 csrf값을 설정 *!/
           xhr.setRequestHeader(header, token);
-        },
+        },*/
         dataType : "json",
         cache   : false,
         success  : function(result, status){

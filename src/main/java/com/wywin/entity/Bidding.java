@@ -22,9 +22,9 @@ public class Bidding extends BaseEntity{
     private AuctionItem auctionItem;  // 해당 경매 아이템 (AuctionItem과의 관계)
 
     @Column(nullable = false)
-    private String currentBidder;   // 현재 입찰자 이메일
+    private String currentBidder;   // 현재 입찰자 닉네임 (경매 종료시 최종 낙찰자)
 
-    private String previousBidder;  // 이전 입찰자 이메일 (첫 입찰 시 null)
+    private String previousBidder;  // 이전 입찰자 닉네임 (첫 입찰 시 null)
 
     @Column(nullable = false)
     private Integer deposit = 0;    // 보증금 (입찰 시 지불한 보증금)
@@ -32,4 +32,6 @@ public class Bidding extends BaseEntity{
     @Column(nullable = false)
     private Integer biddingPrice;   // 입찰 금액 (입찰 시 기록되는 금액)
 
+    @Column(nullable = false)
+    private Integer previousDepositInKRW = 0;  // 이전 입찰자의 환율 적용된 원화 보증금 (환불용)
 }

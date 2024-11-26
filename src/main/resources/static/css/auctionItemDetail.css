@@ -215,9 +215,10 @@ button.action-link:hover {
 
 /* 현재 최종입찰자 입력란 */
 .seller-note input {
-    width: 70%;  /* 가로 크기 약간 줄이기 */
+    width: 50%;  /* 가로 크기 약간 줄이기 */
     padding: 8px;
     margin-top: 5px;
+    margin-right: 5px;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-sizing: border-box;
