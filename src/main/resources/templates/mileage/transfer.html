@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout2}">
+
+
+<div layout:fragment="content">
+  <h1>마일리지 송금</h1>
+  <form action="/mileage/transfer" method="post">
+    <label for="senderId">송금하는 회원 ID:</label>
+    <input type="number" id="senderId" name="senderId" required><br>
+
+    <label for="receiverId">받는 회원 ID:</label>
+    <input type="number" id="receiverId" name="receiverId" required><br>
+
+    <label for="amount">송금할 금액:</label>
+    <input type="number" id="amount" name="amount" required><br>
+
+    <button type="submit">송금</button>
+  </form>
+
+</div>
+</html>

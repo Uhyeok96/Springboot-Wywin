@@ -25,7 +25,7 @@ public class MemberServiceTest {
         MemberDTO memberDTO = new MemberDTO();
         memberDTO.setEmail("test@email.com");
         memberDTO.setName("홍길동");
-        memberDTO.setAddress("서울시 마포구 합정동");
+        /*memberDTO.setAddress("서울시 마포구 합정동");*/
         memberDTO.setPhoneNum("010-1234-1234");
         memberDTO.setNickName("test00");
         memberDTO.setPassword("1234");
@@ -41,7 +41,7 @@ public class MemberServiceTest {
 
         assertEquals(member.getEmail(), savedMember.getEmail());
         assertEquals(member.getName(), savedMember.getName());
-        assertEquals(member.getAddress(), savedMember.getAddress());
+        /*assertEquals(member.getAddress(), savedMember.getAddress());*/
         assertEquals(member.getPhoneNum(), savedMember.getPhoneNum());
         assertEquals(member.getNickName(), savedMember.getNickName());
         assertEquals(member.getPassword(), savedMember.getPassword());

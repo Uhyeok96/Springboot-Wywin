@@ -15,7 +15,7 @@ body {
 }
 .footer {
     position: absolute;
-    top: 95%;
+    top: 92%;
     left: 0;
     right: 0;
     bottom: 0;
@@ -24,13 +24,14 @@ body {
     padding: 5px 0 0 0;
     text-align: center;
     background-color: black;
-    color: aqua;
+    color: gold; /* 글씨 색상을 금색으로 변경 */
 }
 .content{
+    width: 90%;
     height: 100%;
     margin-bottom:100px;
     margin-top: 50px;
     margin-left: 200px;
     margin-right: 200px;
-    background-color: whitesmoke;
+    background-color: white;
 }

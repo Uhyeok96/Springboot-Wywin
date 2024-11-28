@@ -45,6 +45,13 @@ public class SellingItem extends BaseEntity{
 
     private LocalDateTime sellingDate; // 판매일
 
+    // 좋아요 수 필드 (실제로 DB에 저장되지 않으며, 조회 시에만 사용)
+    @Transient // DB에 저장되지 않도록 Transient로 설정
+    private Long likeCount;
+
+    // 현재 사용자가 좋아요를 눌렀는지 여부
+    private boolean isLikedByCurrentUser;
+
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus; // 판매 상태
 

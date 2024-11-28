@@ -1,4 +1,4 @@
-ㅂㅇ<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout1}">
@@ -19,7 +19,7 @@
 
     function calculateTotalPrice(){
       var count = $("#count").val();
-      var price = $("#price").val();
+      var price = $("#price").val()
       var totalPrice = price * count;
       $("#totalPrice").html(totalPrice + '원');
     }

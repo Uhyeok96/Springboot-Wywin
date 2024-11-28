@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+
+<div layout:fragment="content">
+
+  <div class="container mt-5">
+    <h2>배송 상태별 목록</h2>
+
+    <!-- 배송 상태 선택 폼 -->
+    <form th:action="@{/delivery/status}" method="get" class="mb-4">
+      <div class="row">
+        <div class="col-8">
+          <select name="status" class="form-control" required>
+            <option value="PENDING">배송 준비 중</option>
+            <option value="SHIPPED">배송 중</option>
+            <option value="DELIVERED">배송 완료</option>
+            <option value="DELAYED">배송 지연</option>
+            <option value="FAILED">배송 실패</option>
+          </select>
+        </div>
+        <div class="col-4">
+          <button type="submit" class="btn btn-primary w-100">조회</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- 배송 상태별 목록 표시 -->
+    <div th:if="${deliveries}">
+      <table class="table table-bordered">
+        <thead>
+        <tr>
+          <th>운송장 번호</th>
+          <th>수취인</th>
+          <th>배송 상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="delivery : ${deliveries}">
+          <td th:text="${delivery.trackingNumber}"></td>
+          <td th:text="${delivery.recipientName}"></td>
+          <td th:text="${delivery.deliveryStatus}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 배송 정보가 없을 때 -->
+    <div th:if="${not deliveries}">
+      <p>배송 상태에 해당하는 정보가 없습니다.</p>
+    </div>
+  </div>
+
+</div>
+
+</html>

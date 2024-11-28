@@ -1,13 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div class="footer" th:fragment="footer">
-    <!--   다른페이지에 포함시킬 영역을 th:fragment 로 선언    -->
-    <!--   사용은 layouts/layout1.html 파일에서 <div th:replace="~{fragments/footer::footer}"></div>     -->
+    <!-- 다른 페이지에 포함시킬 영역을 th:fragment로 선언 -->
     <footer class="page-footer font-small cyan darken-3">
         <div class="footer-copyright text-center py-3">
             Whatever You Want I Need since 2024. 10. 28<br />
-            문지현, 함시은  <br />
-            양승환, 김우혁
+            <!-- 깃허브 로고와 링크 추가 -->
+            <a href="https://github.com/moonji-hyun" target="_blank">
+                <img src="https://img.shields.io/badge/GitHub-181717?style=social&logo=github" alt="GitHub" style="width: 70px; height: 20px; margin-right: 10px;" />
+            </a>
+            문지현,
+
+            <a href="https://github.com/Si-xxn" target="_blank">
+                <img src="https://img.shields.io/badge/GitHub-181717?style=social&logo=github" alt="GitHub" style="width: 70px; height: 20px; margin-right: 10px;" />
+            </a>
+            함시은  <br />
+
+            <a href="https://github.com/Shwangigi" target="_blank">
+                <img src="https://img.shields.io/badge/GitHub-181717?style=social&logo=github" alt="GitHub" style="width: 70px; height: 20px; margin-right: 10px;" />
+            </a>
+            양승환,
+
+            <a href="https://github.com/Uhyeok96/Springboot-Wywin" target="_blank">
+                <img src="https://img.shields.io/badge/GitHub-181717?style=social&logo=github" alt="GitHub" style="width: 70px; height: 20px; margin-right: 10px;" />
+            </a>
+            김우혁
         </div>
     </footer>
 </div>

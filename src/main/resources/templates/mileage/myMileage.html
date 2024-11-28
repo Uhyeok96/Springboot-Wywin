@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout2}">
+
+<th:block layout:fragment="script">
+
+    <script th:inline="javascript">
+        $(document).ready(function(){
+
+        }); // ready.function end
+
+    </script>
+
+</th:block>
+
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+    <style>
+        .bd{
+            padding:10% 0 0 30%;
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+
+    <div th:class="bd">
+        <h1>마일리지</h1>
+     <!--   <p>현재 마일리지 잔액: <span id="balance" th:value="${member.balance}"></span> 원</p>-->
+        <nav>
+            <ul>
+                <li><a href="/mileage/chargeForm">마일리지 충전</a></li>
+                <li><a href="/mileage/deductForm">마일리지 출금</a></li>
+                <li><a href="/mileage/history">마일리지 내역</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+</html>

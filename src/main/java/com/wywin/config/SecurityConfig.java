@@ -40,7 +40,7 @@ public class SecurityConfig {
             authorizeHttpRequests
                     // requestMatchers - HTTP 요청매체를 적용
                     // .permitAll() 모든 요청을 인가(인증된 사용자 권한에 상관없음)
-                    .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+                    .requestMatchers("/static/**","/css/**", "/js/**", "/img/**").permitAll()
                     .requestMatchers("/", "/members/**", "/item/**", "/images/**").permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     // admin 하위 메서드는 ADMIN 룰에 적용됨

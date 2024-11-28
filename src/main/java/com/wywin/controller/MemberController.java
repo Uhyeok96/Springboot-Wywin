@@ -6,10 +6,14 @@ import com.wywin.dto.UpdatePasswordDTO;
 import com.wywin.entity.Member;
 import com.wywin.repository.MemberRepository;
 import com.wywin.service.EmailServiceImpl;
+import com.wywin.service.KakaoService;
 import com.wywin.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +32,13 @@ public class MemberController {
     private final EmailServiceImpl emailService;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final KakaoService kakaoService;
+
+    @Value("${kakao.client.id}")
+    private String client_id;
+
+    @Value("${kakao.redirect.uri}")
+    private String redirect_uri;
 
 
     @GetMapping(value = "/new")
@@ -78,7 +89,21 @@ public class MemberController {
     }
 
     @GetMapping(value = "/login") // 로그인 페이지 가져옴
-    public String loginMember() {
+    public String loginMember(Model model) {
+
+        String location = "https://kauth.kakao.com/oauth/authorize?" +
+                "client_id="+client_id +
+                "&redirect_uri="+redirect_uri +
+                "response_type=code";
+        model.addAttribute("location", location);
+
+        // https://accounts.kakao.com/login/?
+        // continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3F
+        // client_id%3Ded0bd02823aab29e326bda173d1c8591%2520%26
+        // redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A80%252Fkakao%252Fcallback
+        // response_type%253Dcode%26through_account%3Dtrue#login
+
+        // KOE101 - 잘못된 앱 키 오류
         return "member/login";
     }
 
@@ -169,7 +194,7 @@ public class MemberController {
             return "member/updatePassword";
         }
 
-        return "redirect:/logout";
+        return "redirect:/members/myPage";
     }
 
     @PostMapping(value = "/emailConfirm")
@@ -177,6 +202,24 @@ public class MemberController {
         String confirm = emailService.sendSimpleMessage(email);
 
         return confirm;
+    }
+
+    @GetMapping(value = "/deleteID")
+    public String deleteId() {
+        return "member/deleteID";
+    }
+
+    @PostMapping(value = "/deleteID")
+    public String memberDeleteId(@RequestParam String password, Model model, Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        boolean result = memberService.deleteID(userDetails.getUsername(), password);
+
+        if(result) {
+            return "redirect:/logout";
+        } else {
+            model.addAttribute("wrongPassword", "비밀번호가 일치하지 않습니다.");
+            return "member/deleteID";
+        }
     }
 
 /*

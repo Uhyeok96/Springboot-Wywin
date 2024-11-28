@@ -160,6 +160,30 @@ public class AuctionService {
         }
     }
 
+    // 상품 리스트 처리 메서드 (관리자용)
+    public Page<AuctionItemDTO> getAuctionItemsList(Pageable pageable) {
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("regTime").descending()); // regTime 기준으로 내림차순 정렬
+
+        Page<AuctionItem> auctionItems = auctionItemRepository.findAll(pageable); // 페이징된 경매 아이템 리스트 가져오기
+        return auctionItems.map(item -> {
+            // AuctionItem을 AuctionItemDTO로 변환
+            AuctionItemDTO dto = modelMapper.map(item, AuctionItemDTO.class);
+
+            // 해당 경매 아이템의 이미지 중 대표 이미지 설정
+            AuctionImg repImg = item.getAuctionImgs().stream() // 이미지 리스트에서
+                    .filter(img -> "Y".equals(img.getRepimgYn())) // 대표 이미지 필터링
+                    .findFirst() // 첫 번째 결과만 가져오기
+                    .orElse(null); // 없으면 null
+
+            if (repImg != null) {
+                // 대표 이미지를 포함하는 리스트로 설정
+                dto.setAuctionImgs(Collections.singletonList(AuctionImgDTO.of(repImg))); // 대표 이미지만 리스트에 추가
+            }
+
+            return dto; // 변환된 DTO 반환
+        });
+    }
+
     // AuctionItem -> AuctionItemDTO 변환 함수
     private AuctionItemDTO mapToDTO(AuctionItem item) {
         // 모델 매퍼를 사용해 DTO 변환

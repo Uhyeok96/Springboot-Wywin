@@ -5,6 +5,9 @@
 <th:block layout:fragment="script">
 
   <script th:inline="javascript">
+    $(document).ready(function(){
+
+    }); // ready.function end
 
   </script>
 
@@ -34,9 +37,14 @@
       <input type="text" name="phoneNum" th:value="${member.phoneNum}" readonly>
     </div>
 
-    <div class="myPage-row">
+    <!--<div class="myPage-row">
       <label th:for="address">주소</label>
       <input type="text" name="address" th:value="${member.address}" readonly>
+    </div>-->
+
+    <div class="myPage-row">
+      <label th:for="mileage">마일리지</label>
+      <input type="text" name="mileage" th:value="${member.balance}" readonly>
     </div>
 
     <!--<input type="hidden" th:name="${_csrf.parameterName}"

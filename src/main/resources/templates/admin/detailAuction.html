@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns="http://www.w3.org/1999/html"
+      layout:decorate="~{layouts/layout3}">
+
+<th:block layout:fragment="css">
+    <style>
+        .item-detail-container {
+            display: flex;
+            margin: 20px;
+        }
+        .item-image {
+            width: 50%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 중앙 정렬 */
+        }
+        .item-image .main-image {
+            width: 100%;
+            height: 300px; /* 고정된 높이 */
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+            align-items: center; /* 중앙 정렬 */
+            overflow: hidden; /* 넘치는 부분 숨김 */
+            background-color: #f8f8f8; /* 배경색 */
+        }
+        .item-image .main-image img {
+            max-width: 100%; /* 최대 너비 100% */
+            max-height: 100%; /* 최대 높이 100% */
+            object-fit: cover; /* 비율 유지하면서 채움 */
+            object-position: center; /* 중앙 정렬 */
+        }
+        .thumbnail-container {
+            display: flex;
+            flex-wrap: wrap; /* 여러 줄로 나눠서 표시 */
+            margin-top: 10px;
+            gap: 10px; /* 썸네일 간격 조정 */
+        }
+        .thumbnail {
+            width: 70px; /* 고정된 너비 */
+            height: 70px; /* 고정된 높이 */
+            display: flex; /* 플렉스 박스 사용 */
+            justify-content: center; /* 중앙 정렬 */
+            align-items: center; /* 중앙 정렬 */
+            border: 1px solid #ddd; /* 테두리 */
+            border-radius: 5px; /* 모서리 둥글게 */
+            padding: 5px; /* 여백 추가 */
+            box-sizing: border-box; /* 패딩과 테두리를 포함한 크기 조정 */
+            cursor: pointer; /* 마우스 커서 변경 */
+        }
+        .thumbnail img {
+            max-width: 90%; /* 최대 너비 90% */
+            max-height: 90%; /* 최대 높이 90% */
+            object-fit: contain; /* 비율 유지하면서 포함 */
+            object-position: center; /* 중앙 정렬 */
+        }
+        .item-info {
+            width: 50%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+    </style>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+
+
+
+    </script>
+</th:block>
+
+
+<div layout:fragment="content">
+<form action="/admin/auction/delete/{id}" method="post">
+    <div>
+        <div>NO_<span id="auctionId" th:text="${auctionItem.id}" ></span></div>
+        <br/>
+        <div>작성자 - <span th:text="${auctionItem.createdBy}"></span></div>
+    </div>
+
+    <div class="item-detail-container">
+        <div class="item-image">
+            <div class="main-image">
+                <img th:src="@{${auctionItem.auctionImgs.?[repimgYn=='Y'][0].imgUrl}}" alt="대표 이미지" />
+            </div>
+            <div class="thumbnail-container">
+                <div class="thumbnail" th:each="img : ${auctionItem.auctionImgs}">
+                    <img th:src="${img.imgUrl}"
+                         th:attr="data-img-url=${img.imgUrl}"
+                         alt="썸네일" />
+                </div>
+            </div>
+        </div>
+        <div class="item-info">
+            <h2 th:text="${auctionItem.itemName}"></h2>
+            <div>시작 금액 : <span th:text="${auctionItem.bidPrice}"></span>원</div>
+            <div th:text="${auctionItem.itemLongDetail}"></div>
+            <br/>
+            <div>경매기간 : <span th:text="${auctionItem.auctionPeriod}"></span></div>
+            <div>경매종료일 : <span th:text="${auctionItem.auctionEndDate}"></span></div>
+            <div>최종 낙찰가 : <span th:text="${auctionItem.finalPrice}"></span></div>
+        </div>
+
+    </div>
+    <button type="submit">삭제</button>
+    </form>
+</div>
+</html>

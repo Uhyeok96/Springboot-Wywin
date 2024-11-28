@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout2}">
+
+
+<div layout:fragment="content">
+  <h1>마일리지 충전</h1>
+
+  <!-- 카카오페이 충전 폼 -->
+  <form action="/charge" method="post">
+    <label for="amount">충전할 금액: </label>
+    <input type="number" id="amount" name="amount" required>
+    <button type="submit">충전</button>
+  </form>
+
+  <br>
+  <a href="/mileage/history">마일리지 내역 보기</a>
+</div>
+</html>

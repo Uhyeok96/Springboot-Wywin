@@ -1,10 +1,13 @@
 package com.wywin.entity;
 
 import com.wywin.constant.ItemStatus;
+import com.wywin.dto.ItemFormDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="item")
@@ -12,55 +15,36 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class Item extends BaseEntity{
+    //  구매대행 게시판
 
     @Id // pk 설정
     @Column(name="item_id")
     @GeneratedValue(strategy = GenerationType.AUTO) // 자동번호 생성
-    private Long id;    // 상품 코드
+    private Long id;    // 게시글 고유번호
+
+    @Column(nullable = false, length = 50)
+    private String title; // 구매대행 게시글
 
     @Column(nullable = false, length = 50)
     private String itemNm;  // 상품명
 
-    @Column(name = "price", nullable = false)
-    private int price;  // 가격
+    private String email; // 작성자
 
-    @Column(nullable = false)
-    private int stockNumber;    // 재고수량
-
-    @Lob
-    @Column(nullable = false)
-    private String itemDetail;  // 상품 상세 설명
+    @Column(nullable = false, length = 100)
+    private String content; // 게시글 내용
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ItemStatus itemStatus;  // 상품 판매 상태
 
-  /*  // 상품 업데이트
-    public void updateItem(ItemFormDto itemFormDto){
-        // 엔티티 클래스에 비즈니스 로직을 추가하면 조금 더 객체지향적으로 코딩할 수 있고, 코드 재활용 가능
-        this.itemNm = itemFormDto.getItemNm();
-        this.price = itemFormDto.getPrice();
-        this.stockNumber = itemFormDto.getStockNumber();
-        this.itemDetail = itemFormDto.getItemDetail();
-        this.itemSellStatus = itemFormDto.getItemSellStatus();
-    }
+//    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Comment> comments = new ArrayList<>(); // 댓글 목록
 
-    public void removeStock(int stockNumber){  // exception.OutOfStockException 클래스 활용
-        int restStock = this.stockNumber - stockNumber;  // 재고 수량에서 주문 후 남은 재고 수량을 구함
-
-        if(restStock<0){        // 재고가 주문 수량보다 작을 경우 재고 부족 예외 발생
-            throw new OutOfStockException("상품의 재고가 부족 합니다. (현재 재고 수량: " + this.stockNumber + ")");
-        }
-        this.stockNumber = restStock;  // 주문 후 재고 수량을 상품의 현재 재고값으로 할당.
-    }
-
-    public void addStock(int stockNumber){ //주문 취소 기능 321
-
-        this.stockNumber += stockNumber;
-        // 주문을 취소할 경우 주문 수량 만큼 상품 재고를 증가시키는 메서드
-    }*/
-
-
-
+    public void updateItem(ItemFormDTO itemFormDTO) {
+        this.title = itemFormDTO.getTitle();
+        this.itemNm = itemFormDTO.getItemNm();
+        this.content = itemFormDTO.getContent();
+    } // 게시물 수정
 
 
 }

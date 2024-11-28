@@ -1,47 +1,181 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout1}">
+      layout:decorate="~{layouts/layout4}">
 
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
     <style>
-        .carousel-inner > .item {
-            height: 350px;
+        /* Google Fonts 추가 */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Noto+Sans:wght@400;700&display=swap');
+
+        /* 메인 컨텐츠 스타일 */
+        .content {
+            padding: 20px;
         }
-        .margin {
-            margin-bottom: 30px;
+
+        /* 메인 사진 섹션 스타일 */
+        .main-photo {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
         }
-        .banner {
-            height: 300px;
-            position: absolute; top:0; left: 0;
-            width: 100%;
-            height: 100%;
+
+        /* 메인 소개글을 flex로 배치 */
+        .main-section {
+            display: flex;
+            align-items: center;  /* 세로 중앙 정렬 */
+            justify-content: flex-start;  /* 이미지 왼쪽 정렬 */
+            background-color: black;  /* 배경색을 검정색으로 설정 */
+            padding: 20px;              /* 내용 주변에 여백 추가 */
+            border-radius: 15px;        /* 둥근 모서리 적용 */
+            text-align: left;           /* 텍스트 왼쪽 정렬 */
+            font-size: 1.2rem;          /* 글씨 크기 약간 키움 */
+            color: #333;                /* 글씨 색상 */
         }
-        .card-text {
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
+
+        /* 로고 이미지 스타일 */
+        .main-section img {
+            width: 300px;              /* 이미지 크기 설정 (조금 크게 확대) */
+            height: auto;              /* 자동 높이 맞추기 */
+            border-radius: 10px;       /* 이미지 모서리 둥글게 */
+            margin-right: 20px;        /* 이미지와 텍스트 간의 여백 추가 */
         }
-        a:hover {
-            text-decoration: none;
+
+        /* 메인 소개글 스타일 */
+        .main-section p {
+            font-size: 2rem;  /* 글씨 크기 키움 */
+            font-family: 'Noto Sans', 'Roboto', sans-serif; /* 부드러운 글씨체 */
+            color: gold; /* 글씨 색상을 금색으로 설정 */
+            background-color: black; /* 배경색을 검정색으로 설정 */
+            line-height: 1.8; /* 줄 간격을 넓혀서 읽기 좋게 */
+            font-weight: 400; /* 일반적인 두께 */
+            margin-top: 0; /* 위쪽 여백을 없앰 */
+            padding: 20px; /* 텍스트 주변에 패딩 추가 */
+            border-radius: 10px; /* 둥근 모서리 적용 */
         }
-        .center {
+
+        /* 추가된 작은 글씨 스타일 */
+        .main-section .small-intro {
+            font-size: 1.2rem;  /* 글씨 크기 줄이기 */
+            color: gold; /* 금색으로 설정 */
+            margin-top: 10px; /* 위쪽 여백 추가 */
+            background-color: black; /* 검정 배경색 */
+            padding: 10px 20px; /* 패딩 추가 */
+            border-radius: 10px; /* 둥근 모서리 */
+            font-weight: 300; /* 더 얇은 글씨 */
+        }
+
+        /* 아이템 섹션 스타일 */
+        .item-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .item-section .item {
+            flex: 1;
+            margin: 0 10px;
             text-align: center;
+            padding: 0 15px;
+            position: relative;
+        }
+
+        /* 흐릿한 경계선 스타일 */
+        .item:not(:last-child) {
+            border-right: 1px solid rgba(0, 0, 0, 0.1); /* 마지막 아이템 제외 */
+        }
+
+        /* 이미지 스타일: 박스 크기에 맞게 들어가도록 수정 */
+        .item img {
+            width: 100%;         /* 너비를 100%로 맞춤 */
+            height: 300px;       /* 고정된 높이로 설정 */
+            object-fit: contain; /* 이미지 비율 유지하며 잘리지 않도록 조정 */
+            border-radius: 5px;
+        }
+
+        .item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .item p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        /* 반응형 지원 */
+        @media (max-width: 768px) {
+            .item-section {
+                flex-direction: column;
+            }
+
+            .item {
+                margin-bottom: 20px;
+                border-right: none; /* 세로 방향일 때 경계선 제거 */
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* 수직 분리 */
+            }
+
+            /* 메인 소개글 스타일 수정 (모바일에서의 텍스트 정렬) */
+            .main-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .main-section img {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </th:block>
 
-<div layout:fragment="content">
+<div layout:fragment="content" class="content">
+    <!-- 메인 소개글 섹션 -->
+    <div class="main-section">
+        <!-- wywin.png 이미지 불러오기 -->
+        <img th:src="@{/images/wywinLogo.png}" alt="Wywin Logo">
+        <div>
+            <p>이 사이트는 취업용 프로젝트를 위해 개발 되었습니다.</p>
+            <!-- 추가된 소개글 -->
+            <p class="small-intro">
+                [개발 취지] 소비자가 원하는 상품이 국내 미 출시, 단종으로 구매하지 못하는 경우, 관세, 할인 등으로<br>
+                가격 차이가 많이 나는 경우 해외 거주자가 대신 구매하여<br>
+                소비자의 구매 욕구를 충족시키고자 개발하게 됨.<br><br>
 
-    <!-- 부트스트랩 슬라이드 보여주는 Carousel 컴포넌트를 이용해 배너 생성 -->
-    <!-- 쇼핑몰의 경우 보통 현제 행사 중인 상품을 광고하는데 사용-->
-    <div id="carouselControls" class="carousel slide margin" data-ride="carousel">
-        <div class="carousel-inner">
-            <div class="carousel-item active item">
-                <!-- 이미지 태그 src 속성에는 웹상에 존재하는 이미지 경로를 넣어주면 해당 이미지 보여줌 -->
-                <img class="d-block w-100 banner">
-            </div>
+                [개발 목표] 구매 대행으로 일반적인 쇼핑몰의 B2C 판매 시스템의 부족함을 보완하여<br>
+                소비자의 구매 만족도를 더 충족시키고 경매 시스템 도입으로<br>
+                중고 물품을 보다 합리적인 가격으로 거래를 유도함.<br><br>
+
+                **테스트용 계정 : 일반유저1 (id: ddd@ddd.ddd / pw: 123123), 일반유저2 (id: fff@fff.fff / pw: 123123)
+            </p>
+        </div>
+    </div>
+
+    <!-- 아이템 섹션 -->
+    <div class="item-section">
+        <!-- 경매 아이템 -->
+        <div class="item">
+            <h3>경매 아이템 보러가기</h3>
+            <a th:href="@{/auction/items}" class="page-link">
+                <img th:src="@{${auctionImg}}" alt="Bidding Item" class="main-photo" />
+            </a>
+        </div>
+
+        <!-- 판매 아이템 -->
+        <div class="item">
+            <h3>판매 아이템 보러가기</h3>
+            <a th:href="@{/sellings/sellingList}" class="page-link">
+                <img th:src="@{${sellingImg}}" alt="Shop Item" class="main-photo" />
+            </a>
+        </div>
+
+        <!-- 구매대행 아이템 -->
+        <div class="item">
+            <h3>구매대행 아이템 보러가기</h3>
+            <a th:href="@{/item/itemList}" class="page-link">
+                <img th:src="@{${purchaseImg}}" alt="Purchase Item" class="main-photo" />
+            </a>
         </div>
     </div>
 </div>

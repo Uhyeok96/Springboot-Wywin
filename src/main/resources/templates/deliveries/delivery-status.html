@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+
+<div layout:fragment="content">
+
+  <div class="container mt-5">
+    <h2>배송 상태 조회</h2>
+
+    <!-- 배송 조회 폼 -->
+    <form th:action="@{/delivery/search}" method="get" class="mb-4">
+      <div class="row">
+        <div class="col-8">
+          <input type="text" name="trackingNumber" class="form-control" placeholder="운송장 번호" required>
+        </div>
+        <div class="col-4">
+          <button type="submit" class="btn btn-primary w-100">조회</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- 배송 정보 표시 -->
+    <div th:if="${delivery}">
+      <h4>운송장 번호: <span th:text="${delivery.trackingNumber}"></span></h4>
+      <p>수취인: <span th:text="${delivery.recipientName}"></span></p>
+      <p>배송 상태: <span th:text="${delivery.deliveryStatus}"></span></p>
+
+      <!-- 배송 상태 변경 폼 -->
+      <h5>배송 상태 변경</h5>
+      <form th:action="@{/delivery/{trackingNumber}/status}" method="post">
+        <input type="hidden" name="trackingNumber" th:value="${delivery.trackingNumber}">
+        <div class="form-group">
+          <select name="status" class="form-control" required>
+            <option value="PENDING" th:selected="${delivery.deliveryStatus == 'PENDING'}">배송 준비 중</option>
+            <option value="SHIPPED" th:selected="${delivery.deliveryStatus == 'SHIPPED'}">배송 중</option>
+            <option value="DELIVERED" th:selected="${delivery.deliveryStatus == 'DELIVERED'}">배송 완료</option>
+            <option value="DELAYED" th:selected="${delivery.deliveryStatus == 'DELAYED'}">배송 지연</option>
+            <option value="FAILED" th:selected="${delivery.deliveryStatus == 'FAILED'}">배송 실패</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">상태 변경</button>
+      </form>
+    </div>
+
+    <!-- 배송 정보가 없을 때 -->
+    <div th:if="${not delivery}">
+      <p>해당 운송장 번호에 대한 정보가 없습니다.</p>
+    </div>
+  </div>
+
+
+</div>
+</html>

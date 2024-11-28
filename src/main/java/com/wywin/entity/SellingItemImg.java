@@ -3,11 +3,13 @@ package com.wywin.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "SellingItem_img")
 @Getter
 @Setter
+@ToString
 public class SellingItemImg extends BaseEntity{
 
     @Id

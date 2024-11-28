@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout2}">
+
+<div layout:fragment="content">
+  <form action="/members/deleteID" method="post">
+    <div>
+      <span>회원탈퇴</span>
+      <input type="password" th:value="password" placeholder="현재 비밀번호 입력">
+    </div>
+    <br/>
+    <div>
+      <button type="submit">탈퇴하기</button>
+    </div>
+  </form>
+</div>
+
+</html>

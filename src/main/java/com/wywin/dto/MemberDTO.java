@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -44,8 +45,11 @@ public class MemberDTO {
     /*@Pattern(regexp = "(01[016789])(\\d{3,4})(\\d{4})", message = "올바른 휴대폰 번호를 입력해주세요.")*/
     private String phoneNum;
 
-    @NotEmpty(message = "주소는 필수 입력 값입니다.")
-    private String address;
+    /*@NotEmpty(message = "주소는 필수 입력 값입니다.")
+    private String zipcode; // 우편주소
+    private String address1;
+    private String address2;
+    private String extraAddress; // 참고사항*/
 
     @NotEmpty(message = "닉네임은 필수 입력 값입니다.")
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-z0-9-_]{2,10}$",
@@ -54,6 +58,9 @@ public class MemberDTO {
 
     // 마일리지 계좌를 포함하는 필드 추가
     private MileageAccountDTO mileageAccount;
+
+    @Builder.Default
+    private int balance=1000;
 
 
 }

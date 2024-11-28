@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout3}">
+
+<div layout:fragment="content">
+  <span>판매상품 리스트</span>
+  <table class="table" id="itemTable">
+
+    <thead>
+    <tr>
+      <th scope="col">NO.</th>
+      <th scope="col">상품명</th>
+      <th scope="col">판매가격</th>
+      <th scope="col">재고수량</th>
+      <th scope="col">판매자</th>
+      <th scope="col">판매일</th>
+      <th scope="col">판매상태</th>
+      <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+      <td th:text="${item.sid}"></td>
+      <td th:text="${item.sitemNm}"></td>
+      <td th:text="${item.sprice}"></td>
+      <td th:text="${item.stockNumbers}"></td>
+      <td th:text="${item.seller}"></td>
+      <td th:text="${item.sellingDate}"></td>
+      <td th:text="${item.itemStatus}"></td>
+      <td><a th:href="@{/admin/sellDetail/{sellingId}(sellingId=${item.sid})}">상세보기</a></td>
+    </tr>
+    </tbody>
+
+  </table>
+</div>
+
+<!-- 페이징 처리 -->
+<div>
+  <ul class="pagination">
+    <li class="page-item" th:classappend="${auctionList.hasPrevious()}?'':'disabled'">
+      <a th:href="@{/auction/items(page=${auctionList.number - 1}, size=${auctionList.size})}" class="page-link">이전</a>
+    </li>
+
+    <th:block th:each="page : ${#numbers.sequence(0, auctionList.totalPages - 1)}">
+      <li class="page-item" th:classappend="${auctionList.number == page}?'active':''">
+        <a th:href="@{/auction/items(page=${page}, size=${auctionList.size})}" class="page-link" th:text="${page + 1}"></a>
+      </li>
+    </th:block>
+
+    <li class="page-item" th:classappend="${auctionList.hasNext()}?'':'disabled'">
+      <a th:href="@{/auction/items(page=${auctionList.number + 1}, size=${auctionList.size})}" class="page-link">다음</a>
+    </li>
+  </ul>
+</div>
+
+</html>

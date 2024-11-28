@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout=http://www.ultraq.net.nz/thymeleaf/layout
       layout:decorate="~{layouts/layout1}">
-
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <!-- 사용자 CSS 추가 -->
 <th:block layout:fragment="css">
   <style>
@@ -29,6 +29,10 @@
     var passwordCheck = false;
 
     function valid() {
+
+      var email = $("#email_input").val();
+      var nickName = $("#nickName_input").val();
+
       if(emailCheck_ && nickNameCheck_ && passwordCheck){
         return true;
       } else if(!emailCheck_ && nickNameCheck_ && passwordCheck){
@@ -42,8 +46,8 @@
         return false;
       } else {
         alert("회원가입란에 모두 제대로 작성되었는지 다시 확인해주세요.");
-        return false;
         location.href="/members/new";
+        return false;
       }
     }
 
@@ -51,6 +55,12 @@
     function emailCheck() {
       var email = $("#email_input").val();
       var data = {email : email}
+
+      if(email === null || email === '') {
+        alert("이메일을 입력해주세요.");
+        email.focus();
+        return false;
+      }
 
       $.ajax({
         type: "post",
@@ -72,6 +82,12 @@
     function nickNameCheck() {
       var nickName = $("#nickName_input").val(); // input 박스에 입력되는 값
       var data = {nickName : nickName}           // 컨드롤러에 넘길 데이터 이름 : 데이터(input 박스에 입력되는 값)
+
+      if(nickName === '' || nickName === null) {
+        alert("닉네임을 입력해주세요.");
+        nickName.focus();
+        return false;
+      }
 
       $.ajax({
         type: "post",
@@ -107,6 +123,57 @@
 
     }
 
+    /*function openPostCode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var addr = ''; // 주소 변수
+                var extraAddr = ''; // 참고항목 변수
+
+                //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                    addr = data.roadAddress;
+                } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                    addr = data.jibunAddress;
+                }
+
+                // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                if(data.userSelectedType === 'R'){
+                    // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                    // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                        extraAddr += data.bname;
+                    }
+                    // 건물명이 있고, 공동주택일 경우 추가한다.
+                    if(data.buildingName !== '' && data.apartment === 'Y'){
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                    if(extraAddr !== ''){
+                        extraAddr = ' (' + extraAddr + ')';
+                    }
+                    // 조합된 참고항목을 해당 필드에 넣는다.
+                    document.getElementById("extraAddress").value = extraAddr;
+
+                } else {
+                    document.getElementById("extraAddress").value = '';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('zipcode').value = data.zonecode;
+                document.getElementById("address1").value = addr;
+                // 커서를 상세주소 필드로 이동한다.
+                document.getElementById("address2").focus();
+            }
+        }).open({
+            // 주소 api 창을 띄우는 위치 조정
+            left: 800,
+            top: (window.screen.height - 600) / 2
+        });
+    }*/
   </script>
 </th:block>
 
@@ -127,11 +194,11 @@
       </div>
     </div>
     <!--<div>
-      <label th:for="authCode">이메일 인증코드</label>
-      <div class="input-group mb-3">
-        <button class="btn btn-outline-secondary" type="button" id="button-addon3">이메일 인증코드 전송</button>
-        <input type="text" th:field="*{authCode}" class="form-control" id="email_input_code" aria-describedby="button-addon3">
-      </div>
+        <label th:for="authCode">이메일 인증코드</label>
+        <div class="input-group mb-3">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon3">이메일 인증코드 전송</button>
+            <input type="text" th:field="*{authCode}" class="form-control" id="email_input_code" aria-describedby="button-addon3">
+        </div>
     </div>-->
 
     <div>
@@ -174,7 +241,7 @@
       <label th:for="nickName">닉네임</label>
       <div class="input-group mb-3">
         <input type="text" id="nickName_input" th:field="*{nickName}" class="form-control" placeholder="NickName" aria-describedby="button-addon1">
-        <button class="btn btn-outline-secondary" id="button-addon1" type="button" onclick="emailCheck()" >중복확인</button>
+        <button class="btn btn-outline-secondary" id="button-addon1" type="button" onclick="nickNameCheck()" >중복확인</button>
         <p th:if="${#fields.hasErrors('nickName')}"
            th:errors="*{nickName}" class="fieldError">Incorrect data</p>
         <p id="nickNameCheck1">사용 가능한 닉네임입니다.</p>
@@ -182,25 +249,22 @@
       </div>
     </div>
 
-    <div class="col-md-6">
-      <label th:for="address">주소</label>
-      <div class="input-group mb-3">
-        <input type="text" th:field="*{address}" class="form-control" placeholder="Address" aria-describedby="button-addon4">
-        <button class="btn btn-outline-secondary" id="button-addon4" type="button" >주소검색</button>
-        <p th:if="${#fields.hasErrors('address')}"
-           th:errors="*{address}" class="fieldError">Incorrect data</p>
-      </div>
-    </div>
-    <div>
-      <div class="input-group mb-3">
-        <input type="text" th:field="*{address}" class="form-control" placeholder="Address">
-        <p th:if="${#fields.hasErrors('address')}"
-           th:errors="*{address}" class="fieldError">Incorrect data</p>
-      </div>
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Detail Address">
-      </div>
-    </div>
+    <!--<div class="form-group">
+        <label th:for="address">주소</label>
+         <div class="input-group mb-3">
+             <input type="text" th:field="*{zipcode}" id="zipcode" class="form-control" name="zipcode" placeholder="우편번호" readonly>
+             <input class="btn btn-primary" type="button" value="우편번호 찾기" onclick="openPostCode()">
+         </div>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id= "address1" th:field="*{address1}" name="address1" readonly placeholder="주소">
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="address2" th:field="*{address2}" name="address2" placeholder="상세주소">
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="extraAddress" th:field="*{extraAddress}" name="extraAddress" placeholder="참고사항">
+        </div>
+    </div>-->
 
 
     <div style="text-align: center">

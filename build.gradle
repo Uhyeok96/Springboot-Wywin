@@ -81,12 +81,11 @@ dependencies {
     // 스케줄링을 위한 의존성 - 스프링부트에 기본적으로 포함되어 있어서 별도로 추가할 필요 없음
     // implementation 'org.springframework.boot:spring-boot-starter-scheduling:3.2.11'
 
-/*
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'           //Webflux
 
-    // 외부 인증용 카카오, 구글,  네이버 등....
+    //외부 인증용 카카오, 구글,  네이버 등....
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     // 카카오톡 참고 https://developers.kakao.com/docs/latest/ko/kakaologin/common
-*/
 
     // https://mvnrepository.com/artifact/javax.mail/mail - mail 인증 관련
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail'

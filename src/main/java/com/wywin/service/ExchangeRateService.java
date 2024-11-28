@@ -35,7 +35,7 @@ public class ExchangeRateService {
     private String apiUrl;
 
     // 매일 정해진 시간에 환율 정보를 api를 통해 받아와 데이터베이스에 저장
-    @Scheduled(cron = "0 57 19 * * *")
+    @Scheduled(cron = "0 30 23 * * *")
     @Transactional  // 트랜잭션을 적용하여 DB에 저장이 제대로 이루어지도록 보장
     public void updateExchangeRatesFromApi() {
         System.out.println("Scheduled task started at " + LocalDateTime.now());
