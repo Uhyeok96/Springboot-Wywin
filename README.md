@@ -17,7 +17,7 @@
 
 일반유저2 - ID : fff@fff.fff / PW : 123123
 <br><br>
-**WYWIN 발표자료 다운로드**
+**WYWIN 발표자료 [보러가기](https://www.canva.com/design/DAGYN_7M9Uc/XV0sDnNiMrhce-z_CTaVWw/view?utm_content=DAGYN_7M9Uc&utm_campaign=designshare&utm_medium=link&utm_source=editor#1)**
 
 <br><br>
 
