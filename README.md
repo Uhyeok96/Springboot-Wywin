@@ -95,10 +95,9 @@
 
 **TEST 계정 로그인**
 
-일반유저1
-ID : test1
+일반유저1 - ID : ddd@ddd.ddd / PW : 123123
 
-PW : q1
+일반유저2 - ID : fff@fff.fff / PW : 123123
 
 
 
