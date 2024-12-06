@@ -1,6 +1,7 @@
 # [Spring Boot Project - Wywin]
 
-[Spring Boot 프로젝트 3조]
+![wywin메인페이지](https://github.com/user-attachments/assets/9e73a7fc-31b8-4d88-980c-5f8187ceb087)
+
 <br><br><br>
 ## 프로젝트 소개
 경매 및 해외 구매 대행 사이트를 구현하도록 하였습니다.
