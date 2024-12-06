@@ -93,10 +93,9 @@
 <br><br>
 ## WYWIN 웹사이트 [클릭!](http://mbc-webcloud.iptime.org:8003/)시 홈페이지로 이동합니다.
 
-[감자마켓 홈페이지 이동](http://mbc-webcloud.iptime.org:6302/home) <http://mbc-webcloud.iptime.org:6302/home>
-
 **TEST 계정 로그인**
 
+일반유저1
 ID : test1
 
 PW : q1
